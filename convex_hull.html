@@ -105,6 +105,12 @@
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
 
+    .algo {
+      font-size: 16px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
+    }
+
     button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -151,10 +157,10 @@
     <legend>Preferred Algorithm:</legend>
     <div>
       <input type="radio" id="contactChoice1" name="contact" value="email" checked onclick="setJarvis()" />
-      <label for="contactChoice1">Jarvis March</label>
+      <label class="algo" for="contactChoice1">Jarvis March</label>
 
       <input type="radio" id="contactChoice2" name="contact" value="phone" onclick="setKPS()" />
-      <label for="contactChoice2">Kirk-Patrick-Seidel</label>
+      <label class="algo" for="contactChoice2">Kirk-Patrick-Seidel</label>
     </div>
   </fieldset>
 
