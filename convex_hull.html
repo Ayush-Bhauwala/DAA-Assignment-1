@@ -179,7 +179,20 @@
       </div>
     </fieldset>
 
-    <button id="bbutton" onclick="hull_do()">Compute Convex Hull</button>
+    <fieldset id="canvas3">
+      <legend>Number of Points:</legend>
+      <div>
+        <input
+          type="number"
+          id="numpoints"
+          name="numpoints"
+          value="numpoints"
+        />
+      </div>
+    </fieldset>
+
+    <button id="bbutton" onclick="hull_do()" >Compute Convex Hull</button>
+    <button id="bbutton" onclick="generate_random_points(document.getElementById('numpoints').value)" style="margin-left: 40px" >Generate Random Points</button>
     <button id="bbutton" onclick="hull_do_step()" style="margin-left: 40px">
       Next
     </button>
@@ -401,6 +414,18 @@
         ctx.lineTo(x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress);
         ctx.closePath();
         ctx.stroke();
+      }
+
+      function generate_random_points(n) {
+        points = [];
+        for (var i = 0; i < n; i++) {
+          var x = Math.floor(Math.random() * 1000);
+          var y = Math.floor(Math.random() * 500);
+          points.push({ x, y });
+        }
+        clearCanvas();
+        drawPoints();
+        displayCoordinates();
       }
 
       // Helper function to calculate the distance between two points
@@ -838,11 +863,11 @@
         clearCanvas();
         drawPoints();
 
-        // makePoints();
-        // makeLines();
-        // console.log(paper_points);
-        // console.log(lines);
-        // animatepaper();
+        makePoints();
+        makeLines();
+        console.log(paper_points);
+        console.log(lines);
+        animatepaper();
       }
 
       let index, hull;
