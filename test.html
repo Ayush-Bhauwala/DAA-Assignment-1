@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jarvis March Algorithm Visualization</title>
+  </head>
+
+  <body>
+    <canvas
+      id="myCanvas"
+      width="1400"
+      height="600"
+      style="border: 1px solid black"
+    ></canvas>
+    <button onclick="hull_do()">compute convex hull</button>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.translate(0, canvas.height);
+
+      ctx.scale(1, -1);
+      ctx.translate(0, 0);
+
+      // Function to clear the canvas
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // points = [];
+      }
+
+      const points = [];
+      canvas.addEventListener("click", drawPoint);
+      function drawPoint(event) {
+        // Get the position of the click relative to the canvas
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX;
+        const y = canvas.height - event.clientY;
+        points.push({ x, y });
+        // Draw a small circle at the clicked position
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+      }
+      function drawPoints() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        points.forEach((point) => {
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      }
+
+      /*
+        const hull = KPS(points);
+        ctx.beginPath();
+        const originalStrokeStyle = ctx.strokeStyle; // Save the original stroke style
+        ctx.strokeStyle = 'blue'; // Set stroke color to blue
+        ctx.moveTo(hull[0].x, hull[0].y);
+        for (let i = 1; i < hull.length; i++) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.strokeStyle = originalStrokeStyle; // Restore the original stroke style
+
+        */
+
+      function isInHull(point, hull) {
+        for (let i = 0; i < hull.length; i++) {
+          if (hull[i].x === point.x && hull[i].y === point.y) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      async function jarvisMarch(points) {
+        let delay = 500 * 2; // Delay in milliseconds (adjust as needed)
+        let leftMostPoint = points[0];
+        let leftMostIndex = 0;
+        for (let i = 1; i < points.length; i++) {
+          if (points[i].x < leftMostPoint.x) {
+            leftMostPoint = points[i];
+            leftMostIndex = i;
+          }
+        }
+
+        const hull = [];
+        let currentPoint = leftMostPoint;
+        let currentIndex = leftMostIndex;
+
+        do {
+          hull.push(currentPoint);
+          console.log(hull);
+          ctx.beginPath();
+          const originalStrokeStyle = ctx.strokeStyle;
+          ctx.strokeStyle = "blue";
+          ctx.moveTo(hull[0].x, hull[0].y);
+          for (let i = 1; i < hull.length; i++) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+          }
+          // ctx.closePath();
+          ctx.stroke();
+          ctx.strokeStyle = originalStrokeStyle;
+
+          // Find the next point on the convex hull
+          let nextIndex = (currentIndex + 1) % points.length;
+
+          const linesToDraw = [];
+          for (let i = 0; i < points.length; i++) {
+            if (i === currentIndex || isInHull(points[i], hull)) continue; // Skip the current point
+            linesToDraw.push([currentPoint, points[i]]);
+          }
+
+          for (const [start, end] of linesToDraw) {
+            drawLineWithDelay(start, end, 50); // Draw line
+            await new Promise((resolve) => setTimeout(resolve, delay / 2)); // Wait for a short delay
+          }
+
+          for (let i = 0; i < points.length; i++) {
+            if (i === currentIndex) continue; // Skip the current point
+
+            // Use cross product to determine the orientation of the three points
+            const r = {
+              x: points[nextIndex].x - currentPoint.x,
+              y: points[nextIndex].y - currentPoint.y,
+            };
+            const q = {
+              x: points[i].x - currentPoint.x,
+              y: points[i].y - currentPoint.y,
+            };
+            const cross = r.x * q.y - r.y * q.x;
+
+            // If the cross product is positive, the point is to the left of the line
+            // formed by the current point and the next point. Update the next point
+            // if the cross product is positive or zero (collinear points).
+            if (
+              cross > 0 ||
+              (cross === 0 &&
+                distance(points[i], currentPoint) >
+                  distance(points[nextIndex], currentPoint))
+            ) {
+              nextIndex = i;
+            }
+          }
+
+          // Clear the intermediate lines
+          clearCanvas();
+          drawPoints();
+
+          // Draw the selected line for the convex hull edge
+          currentPoint = points[nextIndex];
+          // drawLineWithDelay(hull[hull.length - 1], currentPoint, 100);
+
+          // await new Promise(resolve => setTimeout(resolve, delay));
+
+          currentIndex = nextIndex;
+        } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+
+        return hull;
+        console.log(hull);
+      }
+
+      function drawLineWithDelay(start, end, delay) {
+        const totalFrames = 10000; // Set to a reasonable number of frames (e.g., 60 for 1 second at 60 FPS)
+        const dx = (end.x - start.x) / totalFrames; // Incremental change in x
+        const dy = (end.y - start.y) / totalFrames; // Incremental change in y
+        let frameCount = 0;
+
+        const startTime = performance.now(); // Get the start time for animation
+
+        const animateFrame = (timestamp) => {
+          const elapsedTime = timestamp - startTime; // Calculate the elapsed time since the start of the animation
+          const progress = Math.min(elapsedTime / delay, 1); // Normalize the progress between 0 and 1
+
+          if (progress < 1) {
+            const x = start.x + dx * frameCount;
+            const y = start.y + dy * frameCount;
+
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            frameCount++;
+            requestAnimationFrame(animateFrame); // Request the next animation frame
+          } else {
+            // Draw the final line segment
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+          }
+        };
+
+        requestAnimationFrame(animateFrame); // Start the animation
+      }
+
+      function drawLine(x1, y1, x2, y2, progress) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress);
+        ctx.closePath();
+        ctx.stroke();
+      }
+
+      // Helper function to calculate the distance between two points
+      function distance(p1, p2) {
+        return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+      }
+
+      function KPS(points) {
+        if (points.length < 4) {
+          return points;
+        }
+
+        //find pumin, plmin, pumax, plmax
+        let pumin = points[0];
+        let plmin = points[0];
+        let pumax = points[0];
+        let plmax = points[0];
+
+        for (let i = 1; i < points.length; i++) {
+          if (points[i].x < pumin.x) {
+            pumin = points[i];
+            plmin = points[i];
+          } else if (points[i].y > pumin.y && points[i].x === pumin.x) {
+            pumin = points[i];
+          } else if (points[i].y < plmin.y && points[i].x === pumin.x) {
+            plmin = points[i];
+          }
+
+          if (points[i].x > pumax.x) {
+            pumax = points[i];
+            plmax = points[i];
+          } else if (points[i].y > pumax.y && points[i].x === pumax.x) {
+            pumax = points[i];
+          } else if (points[i].y < plmax.y && points[i].x === pumax.x) {
+            plmax = points[i];
+          }
+        }
+
+        T_upper = [];
+        T_upper.push(pumin);
+        T_upper.push(pumax);
+
+        for (let i = 0; i < points.length; i++) {
+          if (points[i].x < pumax.x && points[i].x > pumin.x) {
+            T_upper.push(points[i]);
+          }
+        }
+        const upper = UpperHull(pumin, pumax, T_upper);
+        const upper_clone = [...upper];
+        console.log(upper_clone);
+        // T_lower = [];
+        // T_lower.push(plmin);
+        // T_lower.push(plmax);
+        // for (let i = 0; i < points.length; i++) {
+        //   if (points[i].x < plmax.x && points[i].x > plmin.x) {
+        //     T_lower.push(points[i]);
+        //   }
+        // }
+        // lower_hull = LowerHull(plmin, plmax, T_lower);
+
+        const new_pts = flipped(points);
+
+        pumin = new_pts[0];
+        // plmin = new_pts[0];
+        pumax = new_pts[0];
+        // plmax = new_pts[0];
+
+        for (let i = 1; i < new_pts.length; i++) {
+          if (new_pts[i].x < pumin.x) {
+            pumin = new_pts[i];
+            // plmin = new_pts[i];
+          } else if (new_pts[i].y > pumin.y && new_pts[i].x === pumin.x) {
+            pumin = new_pts[i];
+          } else if (new_pts[i].y < plmin.y && new_pts[i].x === pumin.x) {
+            plmin = new_pts[i];
+          }
+
+          if (new_pts[i].x > pumax.x) {
+            pumax = new_pts[i];
+            plmax = new_pts[i];
+          } else if (new_pts[i].y > pumax.y && new_pts[i].x === pumax.x) {
+            pumax = new_pts[i];
+          } else if (new_pts[i].y < plmax.y && new_pts[i].x === pumax.x) {
+            plmax = new_pts[i];
+          }
+        }
+
+        T_upper = [];
+        T_upper.push(pumin);
+        T_upper.push(pumax);
+        for (let i = 0; i < points.length; i++) {
+          if (points[i].x < pumax.x && points[i].x > pumin.x) {
+            T_upper.push(points[i]);
+          }
+        }
+
+        const lower = flipped(UpperHull(pumin, pumax, T_upper));
+        console.log(lower);
+        if (
+          upper[upper.length - 1].x === lower[0].x &&
+          upper[upper.length - 1].y === lower[0].y
+        ) {
+          upper.pop();
+        }
+        if (
+          upper[0].x === lower[lower.length - 1].x &&
+          upper[0].y === lower[lower.length - 1].y
+        ) {
+          lower.pop();
+        }
+        return [...upper, ...lower];
+      }
+
+      function UpperHull(pmin, pmax, T) {
+        console.log(T);
+        if (T.length <= 2) {
+          if (T.length == 2) {
+            if (T[0].x < T[1].x) {
+              return T;
+            } else {
+              return T.reverse();
+            }
+          } else {
+            return T;
+          }
+        }
+        a = findMedian(T);
+        console.log(a);
+        pl_pr_array = UpperBridge(T, a);
+        console.log(pl_pr_array);
+        pl = pl_pr_array[0];
+        pr = pl_pr_array[1];
+
+        //finding points of T_left to the left of line through pl and pmin
+        T_left2 = [];
+        T_left2.push(pl);
+        for (let i = 0; i < T.length; i++) {
+          //   if (isPointLeftOfLine(pmin, pl, T_left[i])) {
+          //     T_left2.push(T_left[i]);
+          //   }
+          if (T[i].x < pl.x) {
+            T_left2.push(T[i]);
+          }
+        }
+
+        //finding points of T_right to the right of line through pr and pmax
+        T_right2 = [];
+        T_right2.push(pr);
+        console.log(pr);
+        for (let i = 0; i < T.length; i++) {
+          //   if (!isPointLeftOfLine(pmax, pr, T_right[i])) {
+          //     T_right2.push(T_right[i]);
+          //   }
+          if (T[i].x > pr.x) {
+            T_right2.push(T[i]);
+          }
+        }
+        let ans = [];
+        // if (pl.x === pmin.x && pl.y === pmin.y) {
+        //   ans.push(pl);
+        //   return ans;
+        // }
+        // if (pr.x === pmax.x && pr.y === pmax.y) {
+        //   ans.push(pr);
+        //   return ans;
+        // }
+
+        // upper_hull_left = UpperHull(pmin, pl, T_left2);
+        // upper_hull_right = UpperHull(pmax, pr, T_right2);
+        console.log(T_left2);
+        console.log(T_right2);
+        let upper_hull_left = [];
+        let upper_hull_right = [];
+        if (pl === pmin) {
+          upper_hull_left.push(pl);
+        } else {
+          upper_hull_left = UpperHull(pmin, pl, T_left2);
+        }
+        if (pr === pmax) {
+          upper_hull_right.push(pr);
+        } else {
+          upper_hull_right = UpperHull(pmax, pr, T_right2);
+        }
+        ans = upper_hull_left.concat(upper_hull_right);
+        return ans;
+      }
+
+      function findMedian(arr) {
+        arr.sort((a, b) => a.x - b.x);
+        const middleIndex = Math.floor(arr.length / 2);
+        // console.log(arr);
+        if (arr.length % 2 === 0) {
+          return (arr[middleIndex - 1].x + arr[middleIndex].x) / 2;
+        } else {
+          return arr[middleIndex].x;
+        }
+      }
+
+      function isPointLeftOfLine(p1, p2, p3) {
+        const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+        const v2 = { x: p3.x - p1.x, y: p3.y - p1.y };
+
+        const cross = v1.x * v2.y - v1.y * v2.x;
+
+        // If the cross product is positive, the third point lies to the left of the line
+        return cross > 0;
+      }
+
+      function LowerHull(pmin, pmax, T) {
+        a = findMedian(T);
+
+        let T_left = [];
+        let T_right = [];
+
+        for (let i = 0; i < T.length; i++) {
+          if (T[i].x <= a) {
+            T_left.push(T[i]);
+          } else {
+            T_right.push(T[i]);
+          }
+        }
+
+        pl_pr_array = LowerBridge(T, a);
+        pl = pl_pr_array[0];
+        pr = pl_pr_array[1];
+
+        //finding points of T_left to the left of line through pl and pmin
+        T_left2 = [];
+        T_left2.push(pl);
+        for (let i = 0; i < T_left.length; i++) {
+          if (isPointLeftOfLine(pmin, pl, T_left[i])) {
+            T_left2.push(T_left[i]);
+          }
+        }
+
+        //finding points of T_right to the right of line through pr and pmax
+        T_right2 = [];
+        T_right2.push(pr);
+        for (let i = 0; i < T_right.length; i++) {
+          if (!isPointLeftOfLine(pmax, pr, T_right[i])) {
+            T_right2.push(T_right[i]);
+          }
+        }
+
+        lower_hull_left = LowerHull(pmin, pl, T_left2);
+        lower_hull_right = LowerHull(pmax, pr, T_right2);
+        let ans = lower_hull_left.concat(lower_hull_right);
+        return ans;
+      }
+
+      function UpperBridge(S, L) {
+        let candidates = [];
+        console.log(candidates);
+        let ans = [];
+        // console.log(S);
+        // console.log(S.length);
+        if (S.length < 2) {
+          return S;
+        }
+        if (S.length === 2) {
+          if (S[0].x <= S[1].x) {
+            ans.push(S[0]);
+            ans.push(S[1]);
+          } else {
+            ans.push(S[1]);
+            ans.push(S[0]);
+          }
+          return ans;
+        }
+
+        if (S.length % 2) {
+          candidates.push[S[0]];
+          S.splice(0, 1);
+        }
+
+        // let pairs = S.map((item, index) => {
+        //   if (index % 2 === 0) {
+        //     if (item.x <= S[index + 1].x) return [item, S[index + 1]];
+        //     else return [S[index + 1], item];
+        //   }
+        // });
+        let pairs = [];
+        for (let i = 0; i < S.length; i += 2) {
+          pairs.push([S[i], S[i + 1]]);
+        }
+
+        slopes = [];
+        pairs.forEach((pair) => {
+          if (pair[0].x === pair[1].x) {
+            if (pair[0].y > pair[1].y) {
+              candidates.push(pair[0]);
+            } else {
+              candidates.push(pair[1]);
+            }
+          } else {
+            let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+            slopes.push(k);
+          }
+        });
+        median_k = findMedianSlope(slopes);
+
+        let small = [];
+        let large = [];
+        let equal = [];
+
+        pairs.forEach((pair) => {
+          let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+
+          if (k < median_k) small.push(pair);
+          else if (k === median_k) equal.push(pair);
+          else large.push(pair);
+        });
+
+        let max = S[0].y - median_k * S[0].x;
+        for (let i = 1; i < S.length; i++) {
+          if (max < S[i].y - median_k * S[i].x)
+            max = S[i].y - median_k * S[i].x;
+        }
+
+        let max_list = [];
+        pk = S[0];
+        pm = S[0];
+        for (let i = 0; i < S.length; i++) {
+          if (max === S[i].y - median_k * S[i].x) {
+            max_list.push(S[i]);
+            if (S[i].x < pk.x) pk = S[i];
+            if (S[i].x > pm.x) pm = S[i];
+          }
+        }
+
+        console.log(pk);
+        console.log(pm);
+        console.log(L);
+
+        if (pk.x <= L && pm.x > L) {
+          ans.push(pk);
+          ans.push(pm);
+          return ans;
+        }
+
+        console.log(small);
+        console.log(candidates);
+        if (pm.x <= a) {
+          for (const ele of small) {
+            const first = ele[0];
+            const second = ele[1];
+            console.log(first);
+            console.log(second);
+            candidates.push(first);
+            console.log(candidates);
+            candidates.push(second);
+          }
+          for (const ele of large) {
+            candidates.push(ele[1]);
+          }
+          for (const ele of equal) {
+            candidates.push(ele[1]);
+          }
+        }
+
+        // if (pk.x > a) {
+        //   for (const ele of small) {
+        //     candidates.push(ele[0]);
+        //   }
+        //   for (const ele of large) {
+        //     candidates.push(ele[0], ele[1]);
+        //   }
+        //   for (const ele of equal) {
+        //     candidates.push(ele[0]);
+        //   }
+        // }
+        console.log(candidates);
+        const cloned = [...candidates];
+        candidates = [];
+        return UpperBridge(cloned, L);
+      }
+
+      function findMedianSlope(arr) {
+        arr.sort((a, b) => a - b);
+        const middleIndex = Math.floor(arr.length / 2);
+
+        if (arr.length % 2 === 0) {
+          return (arr[middleIndex - 1] + arr[middleIndex]) / 2;
+        } else {
+          return arr[middleIndex];
+        }
+      }
+
+      function LowerBridge(S, L) {
+        let candidates = [];
+        let ans = [];
+
+        if (S.length === 2) {
+          if (S[1].x <= S[0].x) {
+            ans.push(S[0]);
+            ans.push(S[1]);
+          } else {
+            ans.push(S[1]);
+            ans.push(S[0]);
+          }
+          return ans;
+        }
+
+        if (S.length % 2) {
+          candidates.push[S[0]];
+          S.splice(0, 1);
+        }
+
+        let pairs = [];
+        for (let i = 0; i < S.length; i += 2) {
+          pairs.push([S[i], S[i + 1]]);
+        }
+        slopes = [];
+        pairs.forEach((pair) => {
+          if (pair[0].x === pair[1].x) {
+            if (pair[1].y > pair[0].y) {
+              candidates.push(pair[0]);
+            } else {
+              candidates.push(pair[1]);
+            }
+          } else {
+            let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+            slopes.push(k);
+          }
+        });
+
+        median_k = findMedianSlope(slopes);
+
+        let small = [];
+        let large = [];
+        let equal = [];
+
+        pairs.forEach((pair) => {
+          let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+
+          if (k < median_k) small.push(pair);
+          else if (k == median_k) equal.push(pair);
+          else large.push(pair);
+        });
+
+        let min = S[0].y - median_k * S[0].x;
+        for (let i = 1; i < S.length; i++) {
+          if (min > S[i].y - median_k * S[i].x)
+            min = S[i].y - median_k * S[i].x;
+        }
+        let min_list = [];
+        pk = S[0];
+        pm = S[0];
+        for (let i = 0; i < S.length; i++) {
+          if (min == S[i].y - median_k * S[i].x) {
+            min_list.push(S[i]);
+            if (S[i].x < pk.x) pk = S[i];
+            if (S[i].x > pm.x) pm = S[i];
+          }
+        }
+
+        if (pk.x <= L && pm.x > L) {
+          ans.push(pm);
+          ans.push(pk);
+          return ans;
+        }
+
+        if (pm.x <= a) {
+          small.forEach((element) => {
+            candidates.push[element[0]];
+            candidates.push[element[1]];
+          });
+          large.forEach((element) => {
+            candidates.push[element[1]];
+          });
+          equal.forEach((element) => {
+            candidates.push[element[1]];
+          });
+        }
+
+        if (pm.x <= a) {
+          small.forEach((element) => {
+            candidates.push[element[0]];
+          });
+          large.forEach((element) => {
+            candidates.push[element[0]];
+            candidates.push[element[1]];
+          });
+          equal.forEach((element) => {
+            candidates.push[element[0]];
+          });
+        }
+
+        return LowerBridge(candidates, L);
+      }
+
+      function flipped(points) {
+        let new_pts = [];
+        for (let i = 0; i < points.length; i++) {
+          let x = points[i].x * -1;
+          let y = points[i].y * -1;
+          new_pts.push({ x, y });
+        }
+        return new_pts;
+      }
+
+      async function hull_do() {
+        drawPoints();
+        const hull = await jarvisMarch(points);
+        console.log(hull);
+        clearCanvas();
+
+        drawPoints();
+        ctx.strokeStyle = "blue";
+        ctx.beginPath();
+        ctx.moveTo(hull[0].x, hull[0].y);
+        for (let i = 1; i < hull.length; i++) {
+          ctx.lineTo(hull[i].x, hull[i].y);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.strokeStyle = "black";
+      }
+    </script>
+  </body>
+</html>
