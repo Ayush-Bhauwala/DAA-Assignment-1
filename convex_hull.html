@@ -140,7 +140,7 @@
 
       legend {
         font-weight: bold;
-        color: #555;
+        color: #ffffff;
       }
 
       #coordinates {
@@ -511,13 +511,12 @@
         if (T.length <= 2) {
           if (T.length == 2) {
             if (T[0].x < T[1].x) {
-              return T;
+              kps_hull_steps.push(T);
             } else {
-              return T.reverse();
+              kps_hull_steps.push(T.reverse());
             }
-          } else {
-            return T;
           }
+          return T;
         }
         var a = findMedian(Array.from(T));
         console.log(a);
@@ -745,14 +744,66 @@
       }
 
       function findMedianSlope(arr) {
-        arr.sort((a, b) => a - b);
-        const middleIndex = Math.floor(arr.length / 2);
+        // arr.sort((a, b) => a - b);
+        // const middleIndex = Math.floor(arr.length / 2);
 
-        if (arr.length % 2 === 0) {
-          return arr[middleIndex - 1];
-        } else {
-          return arr[middleIndex];
+        // if (arr.length % 2 === 0) {
+        //   return arr[middleIndex - 1];
+        // } else {
+        //   return arr[middleIndex];
+        // }
+
+        if (arr.length === 0) return null;
+
+        // Function to find the median of an array
+        function findMedian(arr) {
+          arr.sort((a, b) => a - b);
+          const middleIndex = Math.floor(arr.length / 2);
+          return arr.length % 2 === 0 ? arr[middleIndex - 1] : arr[middleIndex];
         }
+
+        // Function to partition the array
+        function partition(arr, left, right, pivotIndex) {
+          const pivotValue = arr[pivotIndex];
+          let storeIndex = left;
+
+          // Move pivot to the end
+          [arr[pivotIndex], arr[right]] = [arr[right], arr[pivotIndex]];
+
+          // Move elements smaller than pivot to the left
+          for (let i = left; i < right; i++) {
+            if (arr[i] < pivotValue) {
+              [arr[i], arr[storeIndex]] = [arr[storeIndex], arr[i]];
+              storeIndex++;
+            }
+          }
+
+          // Move pivot to its final place
+          [arr[right], arr[storeIndex]] = [arr[storeIndex], arr[right]];
+
+          return storeIndex;
+        }
+
+        // Function to find the median of medians
+        function findMedianOfMedians(arr) {
+          const n = arr.length;
+          const groupSize = 5;
+
+          if (n <= groupSize) return findMedian(arr);
+
+          const numGroups = Math.ceil(n / groupSize);
+          const medians = [];
+
+          for (let i = 0; i < numGroups; i++) {
+            const group = arr.slice(i * groupSize, (i + 1) * groupSize);
+            medians.push(findMedian(group));
+          }
+
+          return findMedianOfMedians(medians);
+        }
+
+        const medianOfMedians = findMedianOfMedians(arr);
+        return medianOfMedians;
       }
 
       function flipped(points) {
@@ -846,19 +897,19 @@
           hull = KPS(points);
         }
 
-        // kps_visualisation();
+        kps_visualisation();
 
-        console.log(hull);
-        for (var i = 1; i < hull.length; i++) {
-          (function (i) {
-            setTimeout(function () {
-              drawLineWithDelay(hull[i - 1], hull[i], 100);
-            }, i * 100);
-          })(i);
-        }
-        setTimeout(function () {
-          drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
-        }, hull.length * 100);
+        // console.log(hull);
+        // for (var i = 1; i < hull.length; i++) {
+        //   (function (i) {
+        //     setTimeout(function () {
+        //       drawLineWithDelay(hull[i - 1], hull[i], 100);
+        //     }, i * 100);
+        //   })(i);
+        // }
+        // setTimeout(function () {
+        //   drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
+        // }, hull.length * 100);
 
         clearCanvas();
         drawPoints();
@@ -930,8 +981,24 @@
           })(i);
         }
 
-        clearCanvas();
-        drawPoints();
+        // for (var i = 1; i < kps_upper.length; i++) {
+        //   (function (i) {
+        //     setTimeout(function () {
+        //       drawLineWithDelay(kps_upper[i - 1], kps_upper[i], 100);
+        //     }, i * 1000);
+        //   })(i);
+        // }
+
+        // for (var i = 1; i < kps_lower.length; i++) {
+        //   (function (i) {
+        //     setTimeout(function () {
+        //       drawLineWithDelay(kps_lower[i - 1], kps_lower[i], 100);
+        //     }, i * 1000);
+        //   })(i);
+        // }
+
+        // clearCanvas();
+        // drawPoints();
       }
 
       function makeLines() {
