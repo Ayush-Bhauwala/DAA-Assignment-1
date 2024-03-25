@@ -320,58 +320,117 @@
         }
       }
 
-      function jarvisMarch(points) {
-        // Find the leftmost point (or the point with the smallest x-coordinate)
-        var leftMostPoint = points[0];
-        var leftMostIndex = 0;
-        for (var i = 1; i < points.length; i++) {
-          if (points[i].x < leftMostPoint.x) {
-            leftMostPoint = points[i];
-            leftMostIndex = i;
-          }
+      function isInHull(point, hull) {
+            for (let i = 0; i < hull.length; i++) {
+                if (hull[i].x === point.x && hull[i].y === point.y) {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        const hull = []; // Array to store the points of the convex hull
-        var currentPoint = leftMostPoint;
-        var currentIndex = leftMostIndex;
-
-        do {
-          hull.push(currentPoint); // Add the current point to the hull
-
-          // Find the next point on the convex hull
-          var nextIndex = (currentIndex + 1) % points.length;
-          for (var i = 0; i < points.length; i++) {
-            if (i === currentIndex) continue; // Skip the current point
-
-            // Use cross product to determine the orientation of the three points
-            const r = {
-              x: points[nextIndex].x - currentPoint.x,
-              y: points[nextIndex].y - currentPoint.y,
-            };
-            const q = {
-              x: points[i].x - currentPoint.x,
-              y: points[i].y - currentPoint.y,
-            };
-            const cross = r.x * q.y - r.y * q.x;
-
-            // If the cross product is positive, the point is to the left of the line
-            // formed by the current point and the next point. Update the next point
-            // if the cross product is positive or zero (collinear points).
-            if (
-              cross > 0 ||
-              (cross === 0 &&
-                distance(points[i], currentPoint) >
-                  distance(points[nextIndex], currentPoint))
-            ) {
-              nextIndex = i;
-            }
+      async function jarvisMarch(points) {
+          let delay = 400; // Delay in milliseconds (adjust as needed)
+          let leftMostPoint = points[0];
+          let leftMostIndex = 0;
+          for (let i = 1; i < points.length; i++) {
+              if (points[i].x < leftMostPoint.x) {
+                  leftMostPoint = points[i];
+                  leftMostIndex = i;
+              }
           }
 
-          currentPoint = points[nextIndex];
-          currentIndex = nextIndex;
-        } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+          const hull = [];
+          let currentPoint = leftMostPoint;
+          let currentIndex = leftMostIndex;
 
-        return hull;
+          const originalStrokeStyle = ctx.strokeStyle;
+
+          do {
+              hull.push(currentPoint);
+              ctx.beginPath();
+              ctx.strokeStyle = 'blue';
+              ctx.moveTo(hull[0].x, hull[0].y);
+              for (let i = 1; i < hull.length; i++) {
+                  ctx.lineTo(hull[i].x, hull[i].y);
+              }
+              ctx.stroke();
+              ctx.strokeStyle = originalStrokeStyle;
+
+              let nextIndex = (currentIndex + 1) % points.length;
+
+              minangle = nextIndex;
+
+              for (let i = 0; i < points.length; i++) {
+                  if (i === currentIndex) continue; // Skip the current point
+
+                  ctx.strokeStyle = 'green';
+                  ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
+                  ctx.lineTo(points[minangle].x, points[minangle].y);
+                  ctx.stroke();
+                  ctx.strokeStyle = originalStrokeStyle;
+
+                  // Use cross product to determine the orientation of the three points
+                  const r = {
+                      x: points[nextIndex].x - currentPoint.x,
+                      y: points[nextIndex].y - currentPoint.y,
+                  };
+                  const q = {
+                      x: points[i].x - currentPoint.x,
+                      y: points[i].y - currentPoint.y,
+                  };
+                  const cross = r.x * q.y - r.y * q.x;
+                  if (
+                      cross > 0 ||
+                      (cross === 0 &&
+                          distance(points[i], currentPoint) >
+                          distance(points[nextIndex], currentPoint))
+                  ) {
+                      // linestodraw.push(points[onhull]);
+                      nextIndex = i;
+                      minangle = nextIndex;
+
+                      drawLineWithDelay(points[currentIndex],points[nextIndex],0);
+                      await new Promise(resolve => setTimeout(resolve, delay));
+                      
+                  }
+                  else{
+                      if(!isInHull(points[i], hull)){
+                          // linestodraw.push(points[i]);
+                          drawLineWithDelay(points[currentIndex],points[i],0);
+                          await new Promise(resolve => setTimeout(resolve, delay));
+                      }
+                      
+                  }
+
+                  // await new Promise(resolve => setTimeout(resolve, delay));
+
+                  clearCanvas();
+                  ctx.strokeStyle = 'black';
+                  drawPoints();
+
+                  ctx.beginPath();
+                  // const originalStrokeStyle = ctx.strokeStyle;
+                  ctx.strokeStyle = 'blue';
+                  ctx.moveTo(hull[0].x, hull[0].y);
+                  for (let i = 1; i < hull.length; i++) {
+                      ctx.lineTo(hull[i].x, hull[i].y);
+                  }
+                  // ctx.closePath();
+                  ctx.stroke();
+                  ctx.strokeStyle = originalStrokeStyle;
+                  
+              }
+
+              clearCanvas();
+              ctx.strokeStyle = 'black';
+              drawPoints();
+              currentPoint = points[nextIndex];
+
+              currentIndex = nextIndex;
+          } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+
+          return hull;
       }
 
       function animateLine(x1, y1, x2, y2) {
@@ -886,13 +945,28 @@
         // points = [];
       }
 
-      function hull_do() {
+      async function hull_do() {
         kps_hull_steps = [];
         console.log(flag);
         let hull;
 
         if (flag == 0) {
-          hull = jarvisMarch(points);
+          // hull = jarvisMarch(points);
+          drawPoints();
+          hull = await jarvisMarch(points);
+          // console.log(hull);
+          clearCanvas();
+
+          drawPoints();
+          ctx.strokeStyle = 'blue';
+          ctx.beginPath();
+          ctx.moveTo(hull[0].x, hull[0].y);
+          for (let i = 1; i < hull.length; i++) {
+              ctx.lineTo(hull[i].x, hull[i].y);
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.strokeStyle = 'black';
         } else {
           hull = KPS(points);
         }
@@ -911,14 +985,14 @@
         //   drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
         // }, hull.length * 100);
 
-        clearCanvas();
-        drawPoints();
+        // clearCanvas();
+        // drawPoints();
 
-        makePoints();
-        makeLines();
-        console.log(paper_points);
-        console.log(lines);
-        animatepaper();
+        // makePoints();
+        // makeLines();
+        // console.log(paper_points);
+        // console.log(lines);
+        // animatepaper();
       }
 
       let index, hull;
