@@ -587,7 +587,7 @@
         if (lower_hull[0].x === upper_hull[upper_hull.length - 1].x) {
           kps_hull_steps.push([
             lower_hull[0],
-            upper_hull[lowerupper.length - 1],
+            upper_hull[upper_hull.length - 1],
           ]);
         }
         return [...upper_hull, ...lower_hull];
@@ -1041,9 +1041,10 @@
           ctx.strokeStyle = "black";
         } else {
           hull = KPS(points);
+          kps_visualisation();
+          clearCanvas();
+          drawPoints();
         }
-
-        kps_visualisation();
 
         // console.log(hull);
         // for (var i = 1; i < hull.length; i++) {
