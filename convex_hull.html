@@ -86,11 +86,34 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
       background-color: #fff;
+      box-shadow: 0 0 20px #39ff14;
+      border-color: #39ff14;
     }
 
     canvas:hover {
       box-shadow: 0 0 50px #39ff14;
       border-color: #39ff14;
+    }
+
+    @keyframes spandem {
+      /* 0% {
+        color: #0e3742;
+        text-shadow: none;
+      } */
+
+      0% {
+        color: white;
+        box-shadow: 0 0 10px #03bcf4, 0 0 20px #03bcf4;
+        /* 0 0 40px #03bcf4,
+          0 0 80px #03bcf4,
+          0 0 160px #03bcf4; */
+      }
+
+      100% {
+        color: white;
+        text-shadow: 0 0 10px #03bcf4, 0 0 20px #03bcf4, 0 0 40px #03bcf4,
+          0 0 80px #03bcf4, 0 0 160px #03bcf4;
+      }
     }
 
     #glass {
@@ -166,7 +189,7 @@
   <fieldset id="canvas3">
     <legend>Number of Points:</legend>
     <div>
-      <input type="number" id="numpoints" name="numpoints" value="numpoints" />
+      <input type="number" id="numpoints" name="numpoints" value="numpoints" min=0 />
     </div>
   </fieldset>
 
@@ -1050,6 +1073,8 @@
       //clear the points
       document.getElementById("coordinates").innerHTML = "";
       index = undefined;
+      //reload page
+      location.reload();
     }
 
     function kps_visualisation() {
