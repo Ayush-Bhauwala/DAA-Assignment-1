@@ -1,19 +1,254 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Jarvis March Algorithm Visualization</title>
+    <title>Cyberpunk Convex Hull Visualizer</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Michroma&display=swap");
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0c0c0c;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+
+      canvas {
+        border: 2px solid #9b59b6;
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+        display: block;
+        margin: 0 auto;
+      }
+
+      #header {
+        font-size: 4em;
+        font-family: "Michroma", sans-serif;
+        color: #3498db;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        text-transform: uppercase;
+        width: 100%;
+        text-align: center;
+        line-height: 0.7em;
+        animation: glitch 5s linear alternate infinite;
+      }
+
+      @keyframes glitch {
+        0% {
+          text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        10% {
+          text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        20% {
+          text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        30% {
+          text-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
+        }
+        40% {
+          text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+        50% {
+          text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+        }
+        60% {
+          text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+        70% {
+          text-shadow: 0 0 10px rgba(255, 128, 0, 0.5);
+        }
+        80% {
+          text-shadow: 0 0 10px rgba(128, 0, 255, 0.5);
+        }
+        90% {
+          text-shadow: 0 0 10px rgba(0, 128, 255, 0.5);
+        }
+        100% {
+          text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+      }
+
+      .algo {
+        font-size: 16px;
+        font-family: "Michroma", sans-serif;
+        color: #9b59b6;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      }
+
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-family: "Michroma", sans-serif;
+        background-color: #0c0c0c;
+        color: #9b59b6;
+        border: 1px solid #9b59b6;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      }
+
+      button:hover {
+        background-color: #9b59b6;
+        color: #0c0c0c;
+        text-shadow: none;
+      }
+
+      fieldset {
+        border: 1px solid #9b59b6;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 20px auto;
+        max-width: 300px;
+        background-color: #0c0c0c;
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      }
+
+      legend {
+        font-weight: bold;
+        color: #9b59b6;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      }
+
+      #coordinates {
+        margin-top: 20px;
+        font-size: 16px;
+        color: #3498db;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+      }
+
+      /* Styles for radio buttons */
+      .radio-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .radio-container input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        outline: none;
+        margin-right: 10px;
+        position: relative;
+      }
+
+      .radio-container input[type="radio"]::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: transparent;
+        transition: background-color 0.3s ease;
+      }
+
+      .radio-container input[type="radio"]:checked::before {
+        background-color: #9b59b6;
+      }
+
+      #contactChoice1 {
+        background-color: #ff0000;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+      }
+
+      #contactChoice2 {
+        background-color: #ffff00;
+        box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+      }
+
+      /* Styles for number input */
+      #numpoints {
+        background-color: #0c0c0c;
+        color: #9b59b6;
+        border: 1px solid #9b59b6;
+        border-radius: 4px;
+        padding: 5px;
+        font-family: "Michroma", sans-serif;
+        text-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+      }
+    </style>
   </head>
 
   <body>
-    <canvas
-      id="myCanvas"
-      width="1400"
-      height="600"
-      style="border: 1px solid black"
-    ></canvas>
-    <button onclick="hull_do()">compute convex hull</button>
-    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <h2 id="header">Convex Hull Visualizer</h2>
+    <canvas id="myCanvas" width="1000" height="500"></canvas>
+
+    <fieldset id="canvas2">
+      <legend>Preferred Algorithm:</legend>
+      <div class="radio-container">
+        <input
+          type="radio"
+          id="contactChoice1"
+          name="contact"
+          value="email"
+          checked
+          onclick="setJarvis()"
+        />
+        <label class="algo" for="contactChoice1">Jarvis March</label>
+      </div>
+      <div class="radio-container">
+        <input
+          type="radio"
+          id="contactChoice2"
+          name="contact"
+          value="phone"
+          onclick="setKPS()"
+        />
+        <label class="algo" for="contactChoice2">Kirk-Patrick-Seidel</label>
+      </div>
+    </fieldset>
+
+    <fieldset id="canvas3">
+      <legend>Number of Points:</legend>
+      <div>
+        <input
+          type="number"
+          id="numpoints"
+          name="numpoints"
+          value="numpoints"
+          min="0"
+        />
+      </div>
+    </fieldset>
+
+    <button id="bbutton" onclick="hull_do()">Compute Convex Hull</button>
+    <button
+      id="bbutton"
+      onclick="generate_random_points(document.getElementById('numpoints').value)"
+      style="margin-left: 40px"
+    >
+      Generate Random Points
+    </button>
+    <button id="bbutton" onclick="hull_do_step()" style="margin-left: 40px">
+      Next
+    </button>
+    <button onclick="takePointsInput()" style="margin-left: 40px">
+      Take Points Input
+    </button>
+    <button onclick="hull_clear()" style="margin-left: 40px">Clear</button>
+    <div id="coordinates"></div>
     <script>
+      // paper.install(window);
+      // paper.setup("myCanvas");
+
+      let flag = 0;
+
+      function setJarvis() {
+        flag = 0;
+      }
+
+      function setKPS() {
+        flag = 1;
+      }
+
       const canvas = document.getElementById("myCanvas");
       const ctx = canvas.getContext("2d");
       ctx.translate(0, canvas.height);
@@ -21,49 +256,102 @@
       ctx.scale(1, -1);
       ctx.translate(0, 0);
 
-      // Function to clear the canvas
-      function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // points = [];
-      }
+      let points = [
+        //initial points
+      ];
 
-      const points = [];
+      let colorGradient = [
+        "#ff0000", // Red
+        "#ff8000", // Orange
+        "#ffff00", // Yellow
+        "#80ff00", // Lime
+        "#00ff00", // Green
+        "#00ff80", // Mint
+        "#00ffff", // Cyan
+        "#0080ff", // Blue
+        "#0000ff", // Navy
+        "#8000ff", // Purple
+        "#ff00ff", // Fuchsia
+      ];
+      let currentColorIndex = 0;
+
+      var lines = [];
+      var currentLineIndex = 0; // Track the current line being animated
+      var animatedLine; // Reference to the animated line path
+      var paper_points = [];
+
+      var kps_hull_steps = [];
+
       canvas.addEventListener("click", drawPoint);
       function drawPoint(event) {
         // Get the position of the click relative to the canvas
         const rect = canvas.getBoundingClientRect();
-        const x = event.clientX;
-        const y = canvas.height - event.clientY;
+        const x = event.clientX - rect.left;
+        const y = canvas.height - (event.clientY - rect.top);
         points.push({ x, y });
-        // Draw a small circle at the clicked position
+        displayCoordinates();
+
+        ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "#ff9966"; // Faded orange color
         ctx.fill();
+
+        canvas.addEventListener("mousemove", function (event) {
+          console.log(points);
+          for (let i = 0; i < points.length; i++) {
+            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            ctx.save();
+            ctx.translate(points[i].x + 10, points[i].y + 10);
+            ctx.scale(1, -1);
+            ctx.fillStyle = "#555"; // Dark gray color
+            ctx.textAlign = "start";
+            ctx.font = "16px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            ctx.fillText(
+              "(" +
+                points[i].x.toFixed(2) +
+                ", " +
+                points[i].y.toFixed(2) +
+                ")",
+              0,
+              0
+            );
+            ctx.restore();
+          }
+        });
       }
+
       function drawPoints() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         points.forEach((point) => {
           ctx.beginPath();
           ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+          ctx.fillStyle = "#ff9966"; // Faded orange color
           ctx.fill();
         });
       }
 
-      /*
-        const hull = KPS(points);
-        ctx.beginPath();
-        const originalStrokeStyle = ctx.strokeStyle; // Save the original stroke style
-        ctx.strokeStyle = 'blue'; // Set stroke color to blue
-        ctx.moveTo(hull[0].x, hull[0].y);
-        for (let i = 1; i < hull.length; i++) {
-            ctx.lineTo(hull[i].x, hull[i].y);
+      function displayCoordinates() {
+        var coordinatesDiv = document.getElementById("coordinates");
+        coordinatesDiv.innerHTML = "<h2>Coordinates</h2>";
+        for (var i = 0; i < points.length; i++) {
+          coordinatesDiv.innerHTML +=
+            "Point " +
+            (i + 1) +
+            ": (" +
+            points[i].x.toFixed(2) +
+            ", " +
+            points[i].y.toFixed(2) +
+            ")<br>";
         }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.strokeStyle = originalStrokeStyle; // Restore the original stroke style
-
-        */
+      }
 
       function isInHull(point, hull) {
         for (let i = 0; i < hull.length; i++) {
@@ -75,7 +363,7 @@
       }
 
       async function jarvisMarch(points) {
-        let delay = 500 * 2; // Delay in milliseconds (adjust as needed)
+        let delay = 400; // Delay in milliseconds (adjust as needed)
         let leftMostPoint = points[0];
         let leftMostIndex = 0;
         for (let i = 1; i < points.length; i++) {
@@ -89,36 +377,31 @@
         let currentPoint = leftMostPoint;
         let currentIndex = leftMostIndex;
 
+        const originalStrokeStyle = ctx.strokeStyle;
+
         do {
           hull.push(currentPoint);
-          console.log(hull);
           ctx.beginPath();
-          const originalStrokeStyle = ctx.strokeStyle;
           ctx.strokeStyle = "blue";
           ctx.moveTo(hull[0].x, hull[0].y);
           for (let i = 1; i < hull.length; i++) {
             ctx.lineTo(hull[i].x, hull[i].y);
           }
-          // ctx.closePath();
           ctx.stroke();
           ctx.strokeStyle = originalStrokeStyle;
 
-          // Find the next point on the convex hull
           let nextIndex = (currentIndex + 1) % points.length;
 
-          const linesToDraw = [];
-          for (let i = 0; i < points.length; i++) {
-            if (i === currentIndex || isInHull(points[i], hull)) continue; // Skip the current point
-            linesToDraw.push([currentPoint, points[i]]);
-          }
-
-          for (const [start, end] of linesToDraw) {
-            drawLineWithDelay(start, end, 50); // Draw line
-            await new Promise((resolve) => setTimeout(resolve, delay / 2)); // Wait for a short delay
-          }
+          minangle = nextIndex;
 
           for (let i = 0; i < points.length; i++) {
             if (i === currentIndex) continue; // Skip the current point
+
+            ctx.strokeStyle = "green";
+            ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
+            ctx.lineTo(points[minangle].x, points[minangle].y);
+            ctx.stroke();
+            ctx.strokeStyle = originalStrokeStyle;
 
             // Use cross product to determine the orientation of the three points
             const r = {
@@ -130,73 +413,89 @@
               y: points[i].y - currentPoint.y,
             };
             const cross = r.x * q.y - r.y * q.x;
-
-            // If the cross product is positive, the point is to the left of the line
-            // formed by the current point and the next point. Update the next point
-            // if the cross product is positive or zero (collinear points).
             if (
               cross > 0 ||
               (cross === 0 &&
                 distance(points[i], currentPoint) >
                   distance(points[nextIndex], currentPoint))
             ) {
+              // linestodraw.push(points[onhull]);
               nextIndex = i;
+              minangle = nextIndex;
+
+              drawLineWithDelay(points[currentIndex], points[nextIndex], 0);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            } else {
+              if (!isInHull(points[i], hull)) {
+                // linestodraw.push(points[i]);
+                drawLineWithDelay(points[currentIndex], points[i], 0);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+              }
             }
+
+            // await new Promise(resolve => setTimeout(resolve, delay));
+
+            clearCanvas();
+            ctx.strokeStyle = "black";
+            drawPoints();
+
+            ctx.beginPath();
+            // const originalStrokeStyle = ctx.strokeStyle;
+            ctx.strokeStyle = "blue";
+            ctx.moveTo(hull[0].x, hull[0].y);
+            for (let i = 1; i < hull.length; i++) {
+              ctx.lineTo(hull[i].x, hull[i].y);
+            }
+            // ctx.closePath();
+            ctx.stroke();
+            ctx.strokeStyle = originalStrokeStyle;
           }
 
-          // Clear the intermediate lines
           clearCanvas();
+          ctx.strokeStyle = "black";
           drawPoints();
-
-          // Draw the selected line for the convex hull edge
           currentPoint = points[nextIndex];
-          // drawLineWithDelay(hull[hull.length - 1], currentPoint, 100);
-
-          // await new Promise(resolve => setTimeout(resolve, delay));
 
           currentIndex = nextIndex;
         } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
 
         return hull;
-        console.log(hull);
       }
 
-      function drawLineWithDelay(start, end, delay) {
-        const totalFrames = 10000; // Set to a reasonable number of frames (e.g., 60 for 1 second at 60 FPS)
-        const dx = (end.x - start.x) / totalFrames; // Incremental change in x
-        const dy = (end.y - start.y) / totalFrames; // Incremental change in y
-        let frameCount = 0;
-
-        const startTime = performance.now(); // Get the start time for animation
-
-        const animateFrame = (timestamp) => {
-          const elapsedTime = timestamp - startTime; // Calculate the elapsed time since the start of the animation
-          const progress = Math.min(elapsedTime / delay, 1); // Normalize the progress between 0 and 1
-
-          if (progress < 1) {
-            const x = start.x + dx * frameCount;
-            const y = start.y + dy * frameCount;
-
-            ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-
-            frameCount++;
-            requestAnimationFrame(animateFrame); // Request the next animation frame
-          } else {
-            // Draw the final line segment
-            ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-            ctx.stroke();
-          }
-        };
-
-        requestAnimationFrame(animateFrame); // Start the animation
+      function animateLine(x1, y1, x2, y2) {
+        return new Promise((resolve) => {
+          const animationInstance = anime({
+            targets: { progress: 1 },
+            progress: 0,
+            easing: "linear",
+            duration: 2000,
+            update: function () {
+              drawLine(x1, y1, x2, y2, animationInstance.progress);
+            },
+            compvare: resolve,
+          });
+        });
       }
 
       function drawLine(x1, y1, x2, y2, progress) {
+        ctx.shadowColor = "rgba(0, 0, 0, 0)";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.beginPath();
+        ctx.arc(x1, y1, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "orange";
+        ctx.fill();
+
+        ctx.shadowColor = "rgba(0, 0, 0, 0)";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.beginPath();
+        ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "orange";
+        ctx.fill();
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -205,23 +504,104 @@
         ctx.stroke();
       }
 
+      function generate_random_points(n) {
+        points = [];
+        for (var i = 0; i < n; i++) {
+          var x = Math.floor(Math.random() * 1000);
+          var y = Math.floor(Math.random() * 500);
+          points.push({ x, y });
+        }
+        clearCanvas();
+        drawPoints();
+        displayCoordinates();
+      }
+
+      //points need to be input from a file upload
+      function takePointsInput() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".txt";
+
+        input.addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          const reader = new FileReader(); //this is a file reader object
+
+          reader.onload = function (e) {
+            //this
+            const contents = e.target.result;
+            const lines = contents.split("\n");
+            points = [];
+            for (let i = 0; i < lines.length; i++) {
+              const [x, y] = lines[i].split(" ").map(Number);
+              points.push({ x, y });
+              clearCanvas();
+              drawPoints();
+              displayCoordinates();
+            }
+            console.log(points);
+          };
+
+          reader.readAsText(file); //this will read the file as text
+        });
+
+        input.click(); //this will trigger the file upload dialog
+      }
+
       // Helper function to calculate the distance between two points
       function distance(p1, p2) {
         return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
       }
 
       function KPS(points) {
+        console.log(points);
         if (points.length < 4) {
           return points;
         }
 
-        //find pumin, plmin, pumax, plmax
-        let pumin = points[0];
-        let plmin = points[0];
-        let pumax = points[0];
-        let plmax = points[0];
+        var upper_hull = callUpperHull(Array.from(points));
+        var new_pts = flipped(Array.from(points));
+        var lower_hull = flipped(callUpperHull(Array.from(new_pts)));
 
-        for (let i = 1; i < points.length; i++) {
+        console.log(upper_hull);
+        console.log(lower_hull);
+
+        if (
+          upper_hull[upper_hull.length - 1].x === lower_hull[0].x &&
+          upper_hull[upper_hull.length - 1].y === lower_hull[0].y
+        ) {
+          upper_hull.pop();
+        }
+        if (
+          upper_hull[0].x === lower_hull[lower_hull.length - 1].x &&
+          upper_hull[0].y === lower_hull[lower_hull.length - 1].y
+        ) {
+          lower_hull.pop();
+        }
+
+        if (upper_hull[0].x === lower_hull[lower_hull.length - 1].x) {
+          kps_hull_steps.push([
+            upper_hull[0],
+            lower_hull[lower_hull.length - 1],
+          ]);
+        }
+        if (lower_hull[0].x === upper_hull[upper_hull.length - 1].x) {
+          kps_hull_steps.push([
+            lower_hull[0],
+            upper_hull[upper_hull.length - 1],
+          ]);
+        }
+        return [...upper_hull, ...lower_hull];
+      }
+
+      function callUpperHull(points) {
+        console.log(points);
+        //find pumin, plmin, pumax, plmax
+        var pumin = points[0];
+        var plmin = points[0];
+        var pumax = points[0];
+        var plmax = points[0];
+
+        for (var i = 1; i < points.length; i++) {
           if (points[i].x < pumin.x) {
             pumin = points[i];
             plmin = points[i];
@@ -241,79 +621,20 @@
           }
         }
 
-        T_upper = [];
+        var T_upper = [];
+        console.log(pumin);
+        console.log(pumax);
         T_upper.push(pumin);
         T_upper.push(pumax);
-
-        for (let i = 0; i < points.length; i++) {
+        console.log(T_upper);
+        var temp = [];
+        for (var i = 0; i < points.length; i++) {
           if (points[i].x < pumax.x && points[i].x > pumin.x) {
             T_upper.push(points[i]);
           }
         }
-        const upper = UpperHull(pumin, pumax, T_upper);
-        const upper_clone = [...upper];
-        console.log(upper_clone);
-        // T_lower = [];
-        // T_lower.push(plmin);
-        // T_lower.push(plmax);
-        // for (let i = 0; i < points.length; i++) {
-        //   if (points[i].x < plmax.x && points[i].x > plmin.x) {
-        //     T_lower.push(points[i]);
-        //   }
-        // }
-        // lower_hull = LowerHull(plmin, plmax, T_lower);
-
-        const new_pts = flipped(points);
-
-        pumin = new_pts[0];
-        // plmin = new_pts[0];
-        pumax = new_pts[0];
-        // plmax = new_pts[0];
-
-        for (let i = 1; i < new_pts.length; i++) {
-          if (new_pts[i].x < pumin.x) {
-            pumin = new_pts[i];
-            // plmin = new_pts[i];
-          } else if (new_pts[i].y > pumin.y && new_pts[i].x === pumin.x) {
-            pumin = new_pts[i];
-          } else if (new_pts[i].y < plmin.y && new_pts[i].x === pumin.x) {
-            plmin = new_pts[i];
-          }
-
-          if (new_pts[i].x > pumax.x) {
-            pumax = new_pts[i];
-            plmax = new_pts[i];
-          } else if (new_pts[i].y > pumax.y && new_pts[i].x === pumax.x) {
-            pumax = new_pts[i];
-          } else if (new_pts[i].y < plmax.y && new_pts[i].x === pumax.x) {
-            plmax = new_pts[i];
-          }
-        }
-
-        T_upper = [];
-        T_upper.push(pumin);
-        T_upper.push(pumax);
-        for (let i = 0; i < points.length; i++) {
-          if (points[i].x < pumax.x && points[i].x > pumin.x) {
-            T_upper.push(points[i]);
-          }
-        }
-
-        const lower = flipped(UpperHull(pumin, pumax, T_upper));
-        console.log(lower);
-        if (
-          upper[upper.length - 1].x === lower[0].x &&
-          upper[upper.length - 1].y === lower[0].y
-        ) {
-          upper.pop();
-        }
-        if (
-          upper[0].x === lower[lower.length - 1].x &&
-          upper[0].y === lower[lower.length - 1].y
-        ) {
-          lower.pop();
-        }
-        return [...upper, ...lower];
+        console.log(Array.from(T_upper));
+        return UpperHull(pumin, pumax, Array.from(T_upper));
       }
 
       function UpperHull(pmin, pmax, T) {
@@ -321,72 +642,73 @@
         if (T.length <= 2) {
           if (T.length == 2) {
             if (T[0].x < T[1].x) {
-              return T;
+              kps_hull_steps.push(T);
             } else {
-              return T.reverse();
+              kps_hull_steps.push(T.reverse());
             }
-          } else {
-            return T;
           }
+          return T;
         }
-        a = findMedian(T);
+        var a = findMedian(Array.from(T));
         console.log(a);
-        pl_pr_array = UpperBridge(T, a);
+        pl_pr_array = UpperBridge(Array.from(T), a);
         console.log(pl_pr_array);
-        pl = pl_pr_array[0];
-        pr = pl_pr_array[1];
+        kps_hull_steps.push(pl_pr_array);
+        console.log(kps_hull_steps);
+        var pl = pl_pr_array[0];
+        var pr = pl_pr_array[1];
 
         //finding points of T_left to the left of line through pl and pmin
-        T_left2 = [];
+        var T_left2 = [];
         T_left2.push(pl);
-        for (let i = 0; i < T.length; i++) {
-          //   if (isPointLeftOfLine(pmin, pl, T_left[i])) {
-          //     T_left2.push(T_left[i]);
-          //   }
+        for (var i = 0; i < T.length; i++) {
           if (T[i].x < pl.x) {
             T_left2.push(T[i]);
           }
         }
-
         //finding points of T_right to the right of line through pr and pmax
-        T_right2 = [];
+        var T_right2 = [];
         T_right2.push(pr);
         console.log(pr);
-        for (let i = 0; i < T.length; i++) {
-          //   if (!isPointLeftOfLine(pmax, pr, T_right[i])) {
-          //     T_right2.push(T_right[i]);
-          //   }
+        for (var i = 0; i < T.length; i++) {
           if (T[i].x > pr.x) {
             T_right2.push(T[i]);
           }
         }
         let ans = [];
-        // if (pl.x === pmin.x && pl.y === pmin.y) {
-        //   ans.push(pl);
-        //   return ans;
-        // }
-        // if (pr.x === pmax.x && pr.y === pmax.y) {
-        //   ans.push(pr);
-        //   return ans;
-        // }
 
-        // upper_hull_left = UpperHull(pmin, pl, T_left2);
-        // upper_hull_right = UpperHull(pmax, pr, T_right2);
         console.log(T_left2);
         console.log(T_right2);
-        let upper_hull_left = [];
-        let upper_hull_right = [];
+
+        var upper_hull_left = [];
+        var upper_hull_right = [];
         if (pl === pmin) {
+          console.log("OOOOO");
           upper_hull_left.push(pl);
         } else {
-          upper_hull_left = UpperHull(pmin, pl, T_left2);
+          console.log("hi");
+          upper_hull_left = UpperHull(pmin, pl, Array.from(T_left2));
+          console.log("hello");
         }
+        console.log(T_right2);
         if (pr === pmax) {
+          console.log("*******");
           upper_hull_right.push(pr);
         } else {
-          upper_hull_right = UpperHull(pmax, pr, T_right2);
+          console.log("GG");
+          console.log(pr);
+          upper_hull_right = UpperHull(pr, pmax, Array.from(T_right2));
+          console.log("HH");
         }
-        ans = upper_hull_left.concat(upper_hull_right);
+        console.log(upper_hull_left);
+        console.log("length is ", upper_hull_left.length);
+        console.log(upper_hull_right);
+        console.log("LENGTH R is ", upper_hull_right.length);
+
+        ans = [...upper_hull_left, ...upper_hull_right];
+        console.log(ans);
+        console.log("ANS len is ", ans.length);
+
         return ans;
       }
 
@@ -401,62 +723,10 @@
         }
       }
 
-      function isPointLeftOfLine(p1, p2, p3) {
-        const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
-        const v2 = { x: p3.x - p1.x, y: p3.y - p1.y };
-
-        const cross = v1.x * v2.y - v1.y * v2.x;
-
-        // If the cross product is positive, the third point lies to the left of the line
-        return cross > 0;
-      }
-
-      function LowerHull(pmin, pmax, T) {
-        a = findMedian(T);
-
-        let T_left = [];
-        let T_right = [];
-
-        for (let i = 0; i < T.length; i++) {
-          if (T[i].x <= a) {
-            T_left.push(T[i]);
-          } else {
-            T_right.push(T[i]);
-          }
-        }
-
-        pl_pr_array = LowerBridge(T, a);
-        pl = pl_pr_array[0];
-        pr = pl_pr_array[1];
-
-        //finding points of T_left to the left of line through pl and pmin
-        T_left2 = [];
-        T_left2.push(pl);
-        for (let i = 0; i < T_left.length; i++) {
-          if (isPointLeftOfLine(pmin, pl, T_left[i])) {
-            T_left2.push(T_left[i]);
-          }
-        }
-
-        //finding points of T_right to the right of line through pr and pmax
-        T_right2 = [];
-        T_right2.push(pr);
-        for (let i = 0; i < T_right.length; i++) {
-          if (!isPointLeftOfLine(pmax, pr, T_right[i])) {
-            T_right2.push(T_right[i]);
-          }
-        }
-
-        lower_hull_left = LowerHull(pmin, pl, T_left2);
-        lower_hull_right = LowerHull(pmax, pr, T_right2);
-        let ans = lower_hull_left.concat(lower_hull_right);
-        return ans;
-      }
-
       function UpperBridge(S, L) {
-        let candidates = [];
-        console.log(candidates);
-        let ans = [];
+        var candidates = [];
+        // console.log(candidates);
+        var ans = [];
         // console.log(S);
         // console.log(S.length);
         if (S.length < 2) {
@@ -472,24 +742,35 @@
           }
           return ans;
         }
-
+        var check = 0;
         if (S.length % 2) {
-          candidates.push[S[0]];
-          S.splice(0, 1);
+          check = 1;
+          candidates.push(S[0]);
         }
 
-        // let pairs = S.map((item, index) => {
-        //   if (index % 2 === 0) {
-        //     if (item.x <= S[index + 1].x) return [item, S[index + 1]];
-        //     else return [S[index + 1], item];
-        //   }
-        // });
-        let pairs = [];
-        for (let i = 0; i < S.length; i += 2) {
-          pairs.push([S[i], S[i + 1]]);
+        var pairs = [];
+        for (var i = check; i < S.length; i += 2) {
+          if (S[i].x <= S[i + 1].x) {
+            pairs.push([S[i], S[i + 1]]);
+          } else {
+            pairs.push([S[i + 1], S[i]]);
+          }
         }
+        console.log(pairs);
+        var slopes = [];
 
-        slopes = [];
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i];
+          if (pair[0].x === pair[1].x) {
+            if (pair[0].y > pair[1].y) {
+              candidates.push(pair[0]);
+            } else {
+              candidates.push(pair[1]);
+            }
+            pairs.splice(i, 1);
+            i--;
+          }
+        }
         pairs.forEach((pair) => {
           if (pair[0].x === pair[1].x) {
             if (pair[0].y > pair[1].y) {
@@ -498,36 +779,46 @@
               candidates.push(pair[1]);
             }
           } else {
-            let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+            var k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
             slopes.push(k);
           }
         });
-        median_k = findMedianSlope(slopes);
-
-        let small = [];
-        let large = [];
-        let equal = [];
+        var median_k = findMedianSlope(slopes);
+        console.log("median slopes of pairs is " + median_k);
+        var small = [];
+        var large = [];
+        var equal = [];
 
         pairs.forEach((pair) => {
-          let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
-
+          var k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
           if (k < median_k) small.push(pair);
           else if (k === median_k) equal.push(pair);
           else large.push(pair);
         });
 
-        let max = S[0].y - median_k * S[0].x;
-        for (let i = 1; i < S.length; i++) {
-          if (max < S[i].y - median_k * S[i].x)
+        var pk = S[0];
+        var pm = S[0];
+        var max = S[0].y - median_k * S[0].x;
+        for (var i = 1; i < S.length; i++) {
+          if (max < S[i].y - median_k * S[i].x) {
             max = S[i].y - median_k * S[i].x;
+            pk = S[i];
+            console.log(pk);
+            pm = S[i];
+          }
         }
 
-        let max_list = [];
-        pk = S[0];
-        pm = S[0];
-        for (let i = 0; i < S.length; i++) {
-          if (max === S[i].y - median_k * S[i].x) {
-            max_list.push(S[i]);
+        console.log(pk);
+        console.log(pm);
+
+        console.log(max);
+
+        var tolerance = 0.000001;
+
+        for (var i = 0; i < S.length; i++) {
+          var difference = Math.abs(max - (S[i].y - median_k * S[i].x));
+          if (difference < tolerance) {
+            console.log("KKKKK");
             if (S[i].x < pk.x) pk = S[i];
             if (S[i].x > pm.x) pm = S[i];
           }
@@ -544,8 +835,10 @@
         }
 
         console.log(small);
+        console.log(equal);
+        console.log(large);
         console.log(candidates);
-        if (pm.x <= a) {
+        if (pm.x <= L) {
           for (const ele of small) {
             const first = ele[0];
             const second = ele[1];
@@ -559,167 +852,311 @@
             candidates.push(ele[1]);
           }
           for (const ele of equal) {
+            console.log(ele[0]);
             candidates.push(ele[1]);
           }
         }
 
-        // if (pk.x > a) {
-        //   for (const ele of small) {
-        //     candidates.push(ele[0]);
-        //   }
-        //   for (const ele of large) {
-        //     candidates.push(ele[0], ele[1]);
-        //   }
-        //   for (const ele of equal) {
-        //     candidates.push(ele[0]);
-        //   }
-        // }
+        if (pk.x > L) {
+          for (const ele of small) {
+            candidates.push(ele[0]);
+          }
+          for (const ele of large) {
+            candidates.push(ele[0], ele[1]);
+          }
+          for (const ele of equal) {
+            candidates.push(ele[0]);
+          }
+        }
         console.log(candidates);
-        const cloned = [...candidates];
-        candidates = [];
-        return UpperBridge(cloned, L);
+        // const cloned = [...candidates];
+        // candidates = [];
+        return UpperBridge(Array.from(candidates), L);
       }
 
       function findMedianSlope(arr) {
-        arr.sort((a, b) => a - b);
-        const middleIndex = Math.floor(arr.length / 2);
+        // arr.sort((a, b) => a - b);
+        // const middleIndex = Math.floor(arr.length / 2);
 
-        if (arr.length % 2 === 0) {
-          return (arr[middleIndex - 1] + arr[middleIndex]) / 2;
-        } else {
-          return arr[middleIndex];
-        }
-      }
+        // if (arr.length % 2 === 0) {
+        //   return arr[middleIndex - 1];
+        // } else {
+        //   return arr[middleIndex];
+        // }
 
-      function LowerBridge(S, L) {
-        let candidates = [];
-        let ans = [];
+        if (arr.length === 0) return null;
 
-        if (S.length === 2) {
-          if (S[1].x <= S[0].x) {
-            ans.push(S[0]);
-            ans.push(S[1]);
-          } else {
-            ans.push(S[1]);
-            ans.push(S[0]);
-          }
-          return ans;
+        // Function to find the median of an array
+        function findMedian(arr) {
+          arr.sort((a, b) => a - b);
+          const middleIndex = Math.floor(arr.length / 2);
+          return arr.length % 2 === 0 ? arr[middleIndex - 1] : arr[middleIndex];
         }
 
-        if (S.length % 2) {
-          candidates.push[S[0]];
-          S.splice(0, 1);
-        }
+        // Function to partition the array
+        function partition(arr, left, right, pivotIndex) {
+          const pivotValue = arr[pivotIndex];
+          let storeIndex = left;
 
-        let pairs = [];
-        for (let i = 0; i < S.length; i += 2) {
-          pairs.push([S[i], S[i + 1]]);
-        }
-        slopes = [];
-        pairs.forEach((pair) => {
-          if (pair[0].x === pair[1].x) {
-            if (pair[1].y > pair[0].y) {
-              candidates.push(pair[0]);
-            } else {
-              candidates.push(pair[1]);
+          // Move pivot to the end
+          [arr[pivotIndex], arr[right]] = [arr[right], arr[pivotIndex]];
+
+          // Move elements smaller than pivot to the left
+          for (let i = left; i < right; i++) {
+            if (arr[i] < pivotValue) {
+              [arr[i], arr[storeIndex]] = [arr[storeIndex], arr[i]];
+              storeIndex++;
             }
-          } else {
-            let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
-            slopes.push(k);
           }
-        });
 
-        median_k = findMedianSlope(slopes);
+          // Move pivot to its final place
+          [arr[right], arr[storeIndex]] = [arr[storeIndex], arr[right]];
 
-        let small = [];
-        let large = [];
-        let equal = [];
-
-        pairs.forEach((pair) => {
-          let k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
-
-          if (k < median_k) small.push(pair);
-          else if (k == median_k) equal.push(pair);
-          else large.push(pair);
-        });
-
-        let min = S[0].y - median_k * S[0].x;
-        for (let i = 1; i < S.length; i++) {
-          if (min > S[i].y - median_k * S[i].x)
-            min = S[i].y - median_k * S[i].x;
+          return storeIndex;
         }
-        let min_list = [];
-        pk = S[0];
-        pm = S[0];
-        for (let i = 0; i < S.length; i++) {
-          if (min == S[i].y - median_k * S[i].x) {
-            min_list.push(S[i]);
-            if (S[i].x < pk.x) pk = S[i];
-            if (S[i].x > pm.x) pm = S[i];
+
+        // Function to find the median of medians
+        function findMedianOfMedians(arr) {
+          const n = arr.length;
+          const groupSize = 5;
+
+          if (n <= groupSize) return findMedian(arr);
+
+          const numGroups = Math.ceil(n / groupSize);
+          const medians = [];
+
+          for (let i = 0; i < numGroups; i++) {
+            const group = arr.slice(i * groupSize, (i + 1) * groupSize);
+            medians.push(findMedian(group));
           }
+
+          return findMedianOfMedians(medians);
         }
 
-        if (pk.x <= L && pm.x > L) {
-          ans.push(pm);
-          ans.push(pk);
-          return ans;
-        }
-
-        if (pm.x <= a) {
-          small.forEach((element) => {
-            candidates.push[element[0]];
-            candidates.push[element[1]];
-          });
-          large.forEach((element) => {
-            candidates.push[element[1]];
-          });
-          equal.forEach((element) => {
-            candidates.push[element[1]];
-          });
-        }
-
-        if (pm.x <= a) {
-          small.forEach((element) => {
-            candidates.push[element[0]];
-          });
-          large.forEach((element) => {
-            candidates.push[element[0]];
-            candidates.push[element[1]];
-          });
-          equal.forEach((element) => {
-            candidates.push[element[0]];
-          });
-        }
-
-        return LowerBridge(candidates, L);
+        const medianOfMedians = findMedianOfMedians(arr);
+        return medianOfMedians;
       }
 
       function flipped(points) {
-        let new_pts = [];
-        for (let i = 0; i < points.length; i++) {
-          let x = points[i].x * -1;
-          let y = points[i].y * -1;
+        var new_pts = [];
+        for (var i = 0; i < points.length; i++) {
+          var x = points[i].x * -1;
+          var y = points[i].y * -1;
           new_pts.push({ x, y });
         }
         return new_pts;
       }
 
-      async function hull_do() {
-        drawPoints();
-        const hull = await jarvisMarch(points);
-        console.log(hull);
-        clearCanvas();
+      function drawLineWithDelay(start, end, delay) {
+        const totalFrames = 10000;
+        const dx = (end.x - start.x) / totalFrames;
+        const dy = (end.y - start.y) / totalFrames;
+        let frameCount = 0;
 
-        drawPoints();
-        ctx.strokeStyle = "blue";
-        ctx.beginPath();
-        ctx.moveTo(hull[0].x, hull[0].y);
-        for (let i = 1; i < hull.length; i++) {
-          ctx.lineTo(hull[i].x, hull[i].y);
+        const startTime = performance.now();
+
+        const animateFrame = (timestamp) => {
+          const elapsedTime = timestamp - startTime;
+          const progress = Math.min(elapsedTime / delay, 1);
+
+          if (progress < 1) {
+            const x = start.x + dx * frameCount;
+            const y = start.y + dy * frameCount;
+
+            // Color the points red
+            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.beginPath();
+            ctx.arc(start.x, start.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ff9966"; // Faded orange color
+            ctx.fill();
+
+            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ff9966"; // Faded orange color
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = "#888"; // Gray color
+            ctx.stroke();
+
+            frameCount++;
+            requestAnimationFrame(animateFrame);
+          } else {
+            ctx.beginPath();
+            ctx.arc(start.x, start.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "#f03d07"; // Darker orange color for corner points
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(end.x, end.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "#f03d07"; // Darker orange color for corner points
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.strokeStyle = "#888"; // Gray color
+            ctx.stroke();
+          }
+        };
+
+        requestAnimationFrame(animateFrame);
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // points = [];
+      }
+
+      async function hull_do() {
+        kps_hull_steps = [];
+        console.log(flag);
+        let hull;
+
+        if (flag == 0) {
+          // hull = jarvisMarch(points);
+          drawPoints();
+          hull = await jarvisMarch(points);
+          // console.log(hull);
+          clearCanvas();
+
+          drawPoints();
+          ctx.strokeStyle = "blue";
+          ctx.beginPath();
+          ctx.moveTo(hull[0].x, hull[0].y);
+          for (let i = 1; i < hull.length; i++) {
+            ctx.lineTo(hull[i].x, hull[i].y);
+          }
+          ctx.closePath();
+          ctx.stroke();
+          ctx.strokeStyle = "black";
+        } else {
+          hull = KPS(points);
+          kps_visualisation();
+          clearCanvas();
+          drawPoints();
         }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.strokeStyle = "black";
+
+        // console.log(hull);
+        // for (var i = 1; i < hull.length; i++) {
+        //   (function (i) {
+        //     setTimeout(function () {
+        //       drawLineWithDelay(hull[i - 1], hull[i], 100);
+        //     }, i * 100);
+        //   })(i);
+        // }
+        // setTimeout(function () {
+        //   drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
+        // }, hull.length * 100);
+
+        // clearCanvas();
+        // drawPoints();
+      }
+
+      let index, hull;
+      function hull_do_step() {
+        // if (index === undefined) {
+        //   // Initialization on first call
+        //   // points = getPoints(); // Assuming this function exists to get the points
+        //   // flag = 0;
+        //   index = 0;
+        // }
+
+        // if (index === 0) {
+        if (flag === 0) {
+          // hull = jarvisMarch(points);
+        } else {
+          kps_by_step();
+        }
+        //   console.log(hull);
+        //   index++;
+        // } else if (index < hull.length) {
+        //   drawLineWithDelay(hull[index - 1], hull[index], 100);
+        //   index++;
+        // } else if (index === hull.length) {
+        //   drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
+        //   index++;
+        // } else {
+        //   // Finished drawing the hull
+        //   clearCanvas();
+        //   drawPoints();
+        //   index = undefined; // Reset for next call
+        // }
+      }
+
+      function hull_clear() {
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        points = [];
+        //clear the points
+        document.getElementById("coordinates").innerHTML = "";
+        index = undefined;
+        //reload page
+        location.reload();
+      }
+
+      function kps_visualisation() {
+        for (var i = 0; i < kps_hull_steps.length; i++) {
+          (function (i) {
+            setTimeout(function () {
+              // console.log(kps_hull_steps[i][0]);
+              drawLineWithDelay(
+                {
+                  x: Math.abs(kps_hull_steps[i][0].x),
+                  y: Math.abs(kps_hull_steps[i][0].y),
+                },
+                {
+                  x: Math.abs(kps_hull_steps[i][1].x),
+                  y: Math.abs(kps_hull_steps[i][1].y),
+                },
+                100
+              );
+            }, i * 1000);
+          })(i);
+        }
+      }
+
+      function kps_by_step() {
+        let hull;
+        if (index === undefined) {
+          // Initialization on first call
+          // points = getPoints(); // Assuming this function exists to get the points
+          // flag = 0;
+          index = 0;
+        }
+        if (index === 0) {
+          hull = KPS(points);
+          console.log(hull);
+          console.log(kps_hull_steps);
+          index++;
+        } else if (index <= kps_hull_steps.length) {
+          drawLineWithDelay(
+            {
+              x: Math.abs(kps_hull_steps[index - 1][0].x),
+              y: Math.abs(kps_hull_steps[index - 1][0].y),
+            },
+            {
+              x: Math.abs(kps_hull_steps[index - 1][1].x),
+              y: Math.abs(kps_hull_steps[index - 1][1].y),
+            },
+            100
+          );
+          index++;
+        } else {
+          // Finished drawing the hull
+          clearCanvas();
+          drawPoints();
+          index = undefined; // Reset for next call
+        }
       }
     </script>
   </body>

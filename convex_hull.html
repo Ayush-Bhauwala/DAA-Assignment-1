@@ -3,6 +3,7 @@
   <head>
     <title>Convex Hull Visualization</title>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Michroma&display=swap");
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         /* change background colour to black */
@@ -27,7 +28,8 @@
         font-size: 4em;
         /* letter-spacing: 15px; */
         /* give it a more broken-ish font, making the letters look worn down */
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; */
+        font-family: "Michroma", sans-serif;
         /* blur the font */
         color: #0e3742;
         text-transform: uppercase;
@@ -86,7 +88,8 @@
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        background-color: #fff;
+        /* background-color: #fff; */
+        background-color: #000;
         box-shadow: 0 0 20px #39ff14;
         border-color: #39ff14;
       }
@@ -133,6 +136,7 @@
       .algo {
         font-size: 16px;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* font-family: "Michroma", sans-serif; */
         color: #ffffff;
       }
 
@@ -140,7 +144,8 @@
         margin-top: 20px;
         padding: 10px 20px;
         font-size: 16px;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        /* font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; */
+        font-family: "Michroma", sans-serif;
         background-color: #555;
         color: #fff;
         border: none;
@@ -152,7 +157,6 @@
       button:hover {
         background-color: #666;
       }
-
       fieldset {
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -231,14 +235,7 @@
     </button>
     <button onclick="hull_clear()" style="margin-left: 40px">Clear</button>
     <div id="coordinates"></div>
-    <!-- <script
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"
-    ></script> -->
     <script>
-      // paper.install(window);
-      // paper.setup("myCanvas");
-
       let flag = 0;
 
       function setJarvis() {
@@ -1064,33 +1061,33 @@
 
       let index, hull;
       function hull_do_step() {
-        if (index === undefined) {
-          // Initialization on first call
-          // points = getPoints(); // Assuming this function exists to get the points
-          // flag = 0;
-          index = 0;
-        }
+        // if (index === undefined) {
+        //   // Initialization on first call
+        //   // points = getPoints(); // Assuming this function exists to get the points
+        //   // flag = 0;
+        //   index = 0;
+        // }
 
-        if (index === 0) {
-          if (flag === 0) {
-            hull = jarvisMarch(points);
-          } else {
-            hull = KPS(points);
-          }
-          console.log(hull);
-          index++;
-        } else if (index < hull.length) {
-          drawLineWithDelay(hull[index - 1], hull[index], 100);
-          index++;
-        } else if (index === hull.length) {
-          drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
-          index++;
+        // if (index === 0) {
+        if (flag === 0) {
+          // hull = jarvisMarch(points);
         } else {
-          // Finished drawing the hull
-          clearCanvas();
-          drawPoints();
-          index = undefined; // Reset for next call
+          kps_by_step();
         }
+        //   console.log(hull);
+        //   index++;
+        // } else if (index < hull.length) {
+        //   drawLineWithDelay(hull[index - 1], hull[index], 100);
+        //   index++;
+        // } else if (index === hull.length) {
+        //   drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
+        //   index++;
+        // } else {
+        //   // Finished drawing the hull
+        //   clearCanvas();
+        //   drawPoints();
+        //   index = undefined; // Reset for next call
+        // }
       }
 
       function hull_clear() {
@@ -1122,6 +1119,40 @@
               );
             }, i * 1000);
           })(i);
+        }
+      }
+
+      function kps_by_step() {
+        let hull;
+        if (index === undefined) {
+          // Initialization on first call
+          // points = getPoints(); // Assuming this function exists to get the points
+          // flag = 0;
+          index = 0;
+        }
+        if (index === 0) {
+          hull = KPS(points);
+          console.log(hull);
+          console.log(kps_hull_steps);
+          index++;
+        } else if (index <= kps_hull_steps.length) {
+          drawLineWithDelay(
+            {
+              x: Math.abs(kps_hull_steps[index - 1][0].x),
+              y: Math.abs(kps_hull_steps[index - 1][0].y),
+            },
+            {
+              x: Math.abs(kps_hull_steps[index - 1][1].x),
+              y: Math.abs(kps_hull_steps[index - 1][1].y),
+            },
+            100
+          );
+          index++;
+        } else {
+          // Finished drawing the hull
+          clearCanvas();
+          drawPoints();
+          index = undefined; // Reset for next call
         }
       }
     </script>
