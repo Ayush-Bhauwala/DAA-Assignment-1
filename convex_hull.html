@@ -6,54 +6,28 @@
       @import url("https://fonts.googleapis.com/css2?family=Michroma&display=swap");
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        /* change background colour to black */
-        /* set the background to the blue brick wall image */
         background-color: #000;
-        /* background-color: #f5f5f5; */
         margin: 0;
         padding: 20px;
         text-align: center;
       }
 
-      /* make the borders of the canvas look like tubelights
-    canvas {
-      border: 2px solid #008000;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-      display: block;
-      margin: 0 auto;
-    }
-    */
-
       #header {
         font-size: 4em;
-        /* letter-spacing: 15px; */
-        /* give it a more broken-ish font, making the letters look worn down */
-        /* font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; */
         font-family: "Michroma", sans-serif;
         /* blur the font */
         color: #0e3742;
         text-transform: uppercase;
         width: 100%;
         text-align: center;
-        /* -webkit-box-reflect: below 1px linear-gradient(transparent, #0004); */
         line-height: 0.7em;
-        /* animation: glowdem 5s linear forwards; */
-        /* Using forwards to keep the final state */
         animation: glowdem 5s linear alternate infinite;
       }
 
       @keyframes glowdem {
-        /* 0% {
-        color: #0e3742;
-        text-shadow: none;
-      } */
-
         0% {
           color: white;
           text-shadow: 0 0 10px #03bcf4, 0 0 20px #03bcf4;
-          /* 0 0 40px #03bcf4,
-          0 0 80px #03bcf4,
-          0 0 160px #03bcf4; */
         }
 
         100% {
@@ -65,19 +39,6 @@
 
       canvas {
         border: 4px solid rgba(0, 128, 0, 0.5);
-        /* semi-transparent green border */
-        /* background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%) -50px 0,
-        linear-gradient(225deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%) -50px 0,
-        linear-gradient(315deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%),
-        linear-gradient(45deg, rgba(255, 255, 255, 0.3) 25%, transparent 25%);
-      background-size: 100px 100px;
-      background-color: #ffffff;
-      /* brighter white background */
-        /* display: block;
-      margin: 0 auto;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(10px); */
-        /* glass-like blur effect */
         background: linear-gradient(
           135deg,
           rgba(255, 255, 255, 0.1),
@@ -88,7 +49,6 @@
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.18);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        /* background-color: #fff; */
         background-color: #000;
         box-shadow: 0 0 20px #39ff14;
         border-color: #39ff14;
@@ -100,17 +60,9 @@
       }
 
       @keyframes spandem {
-        /* 0% {
-        color: #0e3742;
-        text-shadow: none;
-      } */
-
         0% {
           color: white;
           box-shadow: 0 0 10px #03bcf4, 0 0 20px #03bcf4;
-          /* 0 0 40px #03bcf4,
-          0 0 80px #03bcf4,
-          0 0 160px #03bcf4; */
         }
 
         100% {
@@ -136,7 +88,6 @@
       .algo {
         font-size: 16px;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        /* font-family: "Michroma", sans-serif; */
         color: #ffffff;
       }
 
@@ -144,7 +95,6 @@
         margin-top: 20px;
         padding: 10px 20px;
         font-size: 16px;
-        /* font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; */
         font-family: "Michroma", sans-serif;
         background-color: #555;
         color: #fff;
@@ -242,11 +192,16 @@
     <div id="coordinates"></div>
     <script>
       let flag = 0;
-
+      /**
+       * Set the flag to 0 for Jarvis March algorithm.
+       */
       function setJarvis() {
         flag = 0;
       }
 
+      /**
+       * Set the flag to 1 for Kirk-Patrick-Seidel algorithm.
+       */
       function setKPS() {
         flag = 1;
       }
@@ -258,9 +213,7 @@
       ctx.scale(1, -1);
       ctx.translate(0, 0);
 
-      let points = [
-        //initial points
-      ];
+      let points = [];
 
       let colorGradient = [
         "#ff0000", // Red
@@ -278,13 +231,15 @@
       let currentColorIndex = 0;
 
       var lines = [];
-      var currentLineIndex = 0; // Track the current line being animated
-      var animatedLine; // Reference to the animated line path
-      var paper_points = [];
 
       var kps_hull_steps = [];
 
       canvas.addEventListener("click", drawPoint);
+
+      /**
+       * Draw a point on the canvas when the user clicks on it.
+       * @param {MouseEvent} event - The mouse event object.
+       */
       function drawPoint(event) {
         // Get the position of the click relative to the canvas
         const rect = canvas.getBoundingClientRect();
@@ -334,6 +289,9 @@
         // }
       }
 
+      /**
+       * Draw all the points on the canvas.
+       */
       function drawPoints() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         points.forEach((point) => {
@@ -344,6 +302,9 @@
         });
       }
 
+      /**
+       * Display the coordinates of points in the canvas.
+       */
       function displayCoordinates() {
         var coordinatesDiv = document.getElementById("coordinates");
         coordinatesDiv.innerHTML = "<h2>Coordinates</h2>";
@@ -359,6 +320,12 @@
         }
       }
 
+      /**
+       * Check if a point is part of the convex hull.
+       * @param {Object} point - The point object with x and y coordinates.
+       * @param {Array} hull - The array of points in the convex hull.
+       * @returns {boolean} True if the point is in the hull, false otherwise.
+       */
       function isInHull(point, hull) {
         for (let i = 0; i < hull.length; i++) {
           if (hull[i].x === point.x && hull[i].y === point.y) {
@@ -368,8 +335,13 @@
         return false;
       }
 
+      /**
+       * Implement the Jarvis March algorithm to find the convex hull.
+       * @param {Array} points - The array of points.
+       * @returns {Promise<Array>} A Promise that resolves to the array of points in the convex hull.
+       */
       async function jarvisMarch(points) {
-        let delay = 400; // Delay in milliseconds (adjust as needed)
+        let delay = 400; // Delay in milliseconds
         let leftMostPoint = points[0];
         let leftMostIndex = 0;
         for (let i = 1; i < points.length; i++) {
@@ -468,8 +440,13 @@
         return hull;
       }
 
+      /**
+       * Implement the Jarvis March algorithm to find the convex hull without animations.
+       * @param {Array} points - The array of points.
+       * @returns {Promise<Array>} A Promise that resolves to an array containing the convex hull, the leftmost point, and the index of the leftmost point.
+       */
       async function hullonly_jarvisMarch(points) {
-        // let delay = 400; // Delay in milliseconds (adjust as needed)
+        // let delay = 400; // Delay in milliseconds
         let leftMostPoint = points[0];
         let leftMostIndex = 0;
         for (let i = 1; i < points.length; i++) {
@@ -568,6 +545,15 @@
         return [hull, leftMostPoint, leftMostIndex];
       }
 
+      /**
+       * Recursive helper function for the Jarvis March algorithm with step-by-step visualization.
+       * @param {Object} cur - The current point in the hull.
+       * @param {number} cur_index - The index of the current point in the original points array.
+       * @param {Array} points - The array of points.
+       * @param {number} index - The index of the current step in the algorithm.
+       * @param {Array} partial_hull - The array of points in the partial hull so far.
+       * @returns {Promise<Array>} A Promise that resolves to an array containing the next current point, its index, and the updated partial hull.
+       */
       async function jarvisMarch_step(
         cur,
         cur_index,
@@ -684,48 +670,10 @@
         return [currentPoint, currentIndex, partial_hull];
       }
 
-      function animateLine(x1, y1, x2, y2) {
-        return new Promise((resolve) => {
-          const animationInstance = anime({
-            targets: { progress: 1 },
-            progress: 0,
-            easing: "linear",
-            duration: 2000,
-            update: function () {
-              drawLine(x1, y1, x2, y2, animationInstance.progress);
-            },
-            compvare: resolve,
-          });
-        });
-      }
-
-      function drawLine(x1, y1, x2, y2, progress) {
-        ctx.shadowColor = "rgba(0, 0, 0, 0)";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.beginPath();
-        ctx.arc(x1, y1, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "orange";
-        ctx.fill();
-
-        ctx.shadowColor = "rgba(0, 0, 0, 0)";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-        ctx.beginPath();
-        ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
-        ctx.fillStyle = "orange";
-        ctx.fill();
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x1 + (x2 - x1) * progress, y1 + (y2 - y1) * progress);
-        ctx.closePath();
-        ctx.stroke();
-      }
-
+      /**
+       * Generate random points and draw them on the canvas.
+       * @param {number} n - The number of random points to generate.
+       */
       function generate_random_points(n) {
         points = [];
         for (var i = 0; i < n; i++) {
@@ -738,7 +686,9 @@
         displayCoordinates();
       }
 
-      //points need to be input from a file upload
+      /**
+       * Take input points from a file and draw them on the canvas.
+       */
       function takePointsInput() {
         const input = document.createElement("input");
         input.type = "file";
@@ -769,11 +719,21 @@
         input.click(); //this will trigger the file upload dialog
       }
 
-      // Helper function to calculate the distance between two points
+      /**
+       * Calculate the Euclidean distance between two points.
+       * @param {Object} p1 - The first point object with x and y coordinates.
+       * @param {Object} p2 - The second point object with x and y coordinates.
+       * @returns {number} The Euclidean distance between the two points.
+       */
       function distance(p1, p2) {
         return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
       }
 
+      /**
+       * Implement the Kirk-Patrick-Seidel algorithm to find the convex hull.
+       * @param {Array} points - The array of points.
+       * @returns {Array} The array of points in the convex hull.
+       */
       function KPS(points) {
         console.log(points);
         if (points.length < 4) {
@@ -815,6 +775,11 @@
         return [...upper_hull, ...lower_hull];
       }
 
+      /**
+       * Find the upper hull of a set of points using the Kirk-Patrick-Seidel algorithm.
+       * @param {Array} points - The array of points.
+       * @returns {Array} The upper hull of the points.
+       */
       function callUpperHull(points) {
         console.log(points);
         //find pumin, plmin, pumax, plmax
@@ -859,6 +824,13 @@
         return UpperHull(pumin, pumax, Array.from(T_upper));
       }
 
+      /**
+       * Recursive helper function for finding the upper hull.
+       * @param {Object} pmin - The leftmost point.
+       * @param {Object} pmax - The rightmost point.
+       * @param {Array} T - The subset of points between pmin and pmax.
+       * @returns {Array} The upper hull of the points in T.
+       */
       function UpperHull(pmin, pmax, T) {
         console.log(T);
         if (T.length <= 2) {
@@ -934,6 +906,11 @@
         return ans;
       }
 
+      /**
+       * Find the median x-coordinate of an array of points.
+       * @param {Array} arr - The array of points.
+       * @returns {number} The median x-coordinate.
+       */
       function findMedian(arr) {
         arr.sort((a, b) => a.x - b.x);
         const middleIndex = Math.floor(arr.length / 2);
@@ -945,6 +922,12 @@
         }
       }
 
+      /**
+       * Find the bridge points for the upper hull.
+       * @param {Array} S - The set of points.
+       * @param {number} L - The median x-coordinate.
+       * @returns {Array} The left and right bridge points.
+       */
       function UpperBridge(S, L) {
         var candidates = [];
         // console.log(candidates);
@@ -1096,34 +1079,26 @@
         return UpperBridge(Array.from(candidates), L);
       }
 
+      /**
+       * Find the median slope of an array of slopes.
+       * @param {Array} arr - The array of slopes.
+       * @returns {number} The median slope.
+       */
       function findMedianSlope(arr) {
-        // arr.sort((a, b) => a - b);
-        // const middleIndex = Math.floor(arr.length / 2);
-
-        // if (arr.length % 2 === 0) {
-        //   return arr[middleIndex - 1];
-        // } else {
-        //   return arr[middleIndex];
-        // }
-
         if (arr.length === 0) return null;
 
-        // Function to find the median of an array
         function findMedian(arr) {
           arr.sort((a, b) => a - b);
           const middleIndex = Math.floor(arr.length / 2);
           return arr.length % 2 === 0 ? arr[middleIndex - 1] : arr[middleIndex];
         }
 
-        // Function to partition the array
         function partition(arr, left, right, pivotIndex) {
           const pivotValue = arr[pivotIndex];
           let storeIndex = left;
 
-          // Move pivot to the end
           [arr[pivotIndex], arr[right]] = [arr[right], arr[pivotIndex]];
 
-          // Move elements smaller than pivot to the left
           for (let i = left; i < right; i++) {
             if (arr[i] < pivotValue) {
               [arr[i], arr[storeIndex]] = [arr[storeIndex], arr[i]];
@@ -1131,13 +1106,11 @@
             }
           }
 
-          // Move pivot to its final place
           [arr[right], arr[storeIndex]] = [arr[storeIndex], arr[right]];
 
           return storeIndex;
         }
 
-        // Function to find the median of medians
         function findMedianOfMedians(arr) {
           const n = arr.length;
           const groupSize = 5;
@@ -1159,6 +1132,11 @@
         return medianOfMedians;
       }
 
+      /**
+       * Flip the points about the origin.
+       * @param {Array} points - The array of points.
+       * @returns {Array} The flipped array of points.
+       */
       function flipped(points) {
         var new_pts = [];
         for (var i = 0; i < points.length; i++) {
@@ -1169,6 +1147,12 @@
         return new_pts;
       }
 
+      /**
+       * Draws a line between two points with a delay effect.
+       * @param {Object} start - The starting point coordinates {x, y}.
+       * @param {Object} end - The ending point coordinates {x, y}.
+       * @param {number} delay - The delay time in milliseconds.
+       */
       function drawLineWithDelay(start, end, delay) {
         const totalFrames = 10000;
         const dx = (end.x - start.x) / totalFrames;
@@ -1185,14 +1169,13 @@
             const x = start.x + dx * frameCount;
             const y = start.y + dy * frameCount;
 
-            // Color the points red
             ctx.shadowColor = "rgba(0, 0, 0, 0)";
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
             ctx.beginPath();
             ctx.arc(start.x, start.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "#ff9966"; // Faded orange color
+            ctx.fillStyle = "#ff9966";
             ctx.fill();
 
             ctx.shadowColor = "rgba(0, 0, 0, 0)";
@@ -1201,13 +1184,13 @@
             ctx.shadowOffsetY = 0;
             ctx.beginPath();
             ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "#ff9966"; // Faded orange color
+            ctx.fillStyle = "#ff9966";
             ctx.fill();
 
             ctx.beginPath();
             ctx.moveTo(start.x, start.y);
             ctx.lineTo(x, y);
-            ctx.strokeStyle = "#888"; // Gray color
+            ctx.strokeStyle = "#888";
             ctx.stroke();
 
             frameCount++;
@@ -1215,18 +1198,18 @@
           } else {
             ctx.beginPath();
             ctx.arc(start.x, start.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "#f03d07"; // Darker orange color for corner points
+            ctx.fillStyle = "#f03d07";
             ctx.fill();
 
             ctx.beginPath();
             ctx.arc(end.x, end.y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = "#f03d07"; // Darker orange color for corner points
+            ctx.fillStyle = "#f03d07";
             ctx.fill();
 
             ctx.beginPath();
             ctx.moveTo(start.x, start.y);
             ctx.lineTo(end.x, end.y);
-            ctx.strokeStyle = "#888"; // Gray color
+            ctx.strokeStyle = "#888";
             ctx.stroke();
           }
         };
@@ -1234,11 +1217,17 @@
         requestAnimationFrame(animateFrame);
       }
 
+      /**
+       * Clears the canvas.
+       */
       function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // points = [];
       }
 
+      /**
+       * Skips animations and displays the convex hull.
+       */
       async function skip_animations() {
         let hull;
         if (flag === 0) {
@@ -1324,6 +1313,9 @@
         }
       }
 
+      /**
+       * Displays the convex hull with animations.
+       */
       async function hull_do() {
         kps_hull_steps = [];
         console.log(flag);
@@ -1382,6 +1374,9 @@
       let index, hull, cur, cur_index;
       let cur_hull = [];
 
+      /**
+       * Performs one step of Jarvis March algorithm to compute convex hull.
+       */
       async function jarvis_march_hull_step() {
         if (index === undefined) {
           index = 0;
@@ -1432,6 +1427,9 @@
         }
       }
 
+      /**
+       * Performs one step of convex hull computation.
+       */
       function hull_do_step() {
         if (flag === 0) {
           jarvis_march_hull_step();
@@ -1440,6 +1438,9 @@
         }
       }
 
+      /**
+       * Clears the canvas and resets the state.
+       */
       function hull_clear() {
         const context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
@@ -1451,11 +1452,13 @@
         location.reload();
       }
 
+      /**
+       * Visualizes the KPS (Kirkpatrick-Seidel) convex hull computation.
+       */
       function kps_visualisation() {
         for (var i = 0; i < kps_hull_steps.length; i++) {
           (function (i) {
             setTimeout(function () {
-              // console.log(kps_hull_steps[i][0]);
               drawLineWithDelay(
                 {
                   x: Math.abs(kps_hull_steps[i][0].x),
@@ -1472,12 +1475,12 @@
         }
       }
 
+      /**
+       * Performs one step of Kirkpatrick-Seidel (KPS) algorithm to compute convex hull.
+       */
       function kps_by_step() {
         let hull;
         if (index === undefined) {
-          // Initialization on first call
-          // points = getPoints(); // Assuming this function exists to get the points
-          // flag = 0;
           index = 0;
         }
         if (index === 0) {
