@@ -198,7 +198,7 @@
     style="margin-left: 40px">
     Generate Random Points
   </button>
-  <button id="bbutton" onclick="hull_do_step()" style="margin-left: 40px">
+  <button id="bbutton" onclick="hull_do_step1()" style="margin-left: 40px">
     Next
   </button>
   <button onclick="takePointsInput()" style="margin-left: 40px">
@@ -441,6 +441,216 @@
       } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
 
       return hull;
+    }
+
+    async function hullonly_jarvisMarch(points) {
+      // let delay = 400; // Delay in milliseconds (adjust as needed)
+      let leftMostPoint = points[0];
+      let leftMostIndex = 0;
+      for (let i = 1; i < points.length; i++) {
+        if (points[i].x < leftMostPoint.x) {
+          leftMostPoint = points[i];
+          leftMostIndex = i;
+        }
+      }
+
+      const hull = [];
+      let currentPoint = leftMostPoint;
+      let currentIndex = leftMostIndex;
+
+      const originalStrokeStyle = ctx.strokeStyle;
+
+      do {
+        hull.push(currentPoint);
+        // ctx.beginPath();
+        // ctx.strokeStyle = "blue";
+        // ctx.moveTo(hull[0].x, hull[0].y);
+        // for (let i = 1; i < hull.length; i++) {
+        //   ctx.lineTo(hull[i].x, hull[i].y);
+        // }
+        // ctx.stroke();
+        // ctx.strokeStyle = originalStrokeStyle;
+
+        let nextIndex = (currentIndex + 1) % points.length;
+
+        minangle = nextIndex;
+
+        for (let i = 0; i < points.length; i++) {
+          if (i === currentIndex) continue; // Skip the current point
+
+          // ctx.strokeStyle = "green";
+          // ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
+          // ctx.lineTo(points[minangle].x, points[minangle].y);
+          // ctx.stroke();
+          // ctx.strokeStyle = originalStrokeStyle;
+
+          // Use cross product to determine the orientation of the three points
+          const r = {
+            x: points[nextIndex].x - currentPoint.x,
+            y: points[nextIndex].y - currentPoint.y,
+          };
+          const q = {
+            x: points[i].x - currentPoint.x,
+            y: points[i].y - currentPoint.y,
+          };
+          const cross = r.x * q.y - r.y * q.x;
+          if (
+            cross > 0 ||
+            (cross === 0 &&
+              distance(points[i], currentPoint) >
+              distance(points[nextIndex], currentPoint))
+          ) {
+            // linestodraw.push(points[onhull]);
+            nextIndex = i;
+            minangle = nextIndex;
+
+            // drawLineWithDelay(points[currentIndex], points[nextIndex], 0);
+            // await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            if (!isInHull(points[i], hull)) {
+              // linestodraw.push(points[i]);
+              // drawLineWithDelay(points[currentIndex], points[i], 0);
+              // await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+          }
+
+          // await new Promise(resolve => setTimeout(resolve, delay));
+
+          // clearCanvas();
+          // ctx.strokeStyle = "black";
+          // drawPoints();
+
+          // ctx.beginPath();
+          // // const originalStrokeStyle = ctx.strokeStyle;
+          // ctx.strokeStyle = "blue";
+          // ctx.moveTo(hull[0].x, hull[0].y);
+          // for (let i = 1; i < hull.length; i++) {
+          //   ctx.lineTo(hull[i].x, hull[i].y);
+          // }
+          // // ctx.closePath();
+          // ctx.stroke();
+          // ctx.strokeStyle = originalStrokeStyle;
+        }
+
+        // clearCanvas();
+        // ctx.strokeStyle = "black";
+        // drawPoints();
+        currentPoint = points[nextIndex];
+
+        currentIndex = nextIndex;
+      } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+
+      return [hull,leftMostPoint,leftMostIndex];
+    }
+
+    async function jarvisMarch_step(cur,cur_index,points,index,partial_hull) {
+      let delay = 400; // Delay in milliseconds (adjust as needed)
+
+      // const partial_hull = [];
+      let currentPoint = cur;
+      let currentIndex = cur_index;
+
+      // const originalStrokeStyle = ctx.strokeStyle;
+
+      // ctx.beginPath();
+      // ctx.strokeStyle = "blue";
+      // ctx.moveTo(partial_hull[0].x, partial_hull[0].y);
+      // for (let i = 1; i < partial_hull.length; i++) {
+      //   ctx.lineTo(partial_hull[i].x, partial_hull[i].y);
+      // }
+      // ctx.stroke();
+      // ctx.strokeStyle = originalStrokeStyle;
+
+      let nextIndex = (currentIndex + 1) % points.length;
+
+      minangle = nextIndex;
+
+      for (let i = 0; i < points.length; i++) {
+        ctx.beginPath();
+        ctx.strokeStyle = "blue";
+        // console.log(cur_hull);
+        ctx.moveTo(partial_hull[0].x, partial_hull[0].y);
+        for (let i = 1; i < partial_hull.length; i++) {
+          ctx.lineTo(partial_hull[i].x, partial_hull[i].y);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = 'black';
+
+        if (i === currentIndex) continue; // Skip the current point
+
+        ctx.strokeStyle = "green";
+        ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
+        ctx.lineTo(points[minangle].x, points[minangle].y);
+        ctx.stroke();
+        ctx.strokeStyle = 'black';
+
+        // Use cross product to determine the orientation of the three points
+        const r = {
+          x: points[nextIndex].x - currentPoint.x,
+          y: points[nextIndex].y - currentPoint.y,
+        };
+        const q = {
+          x: points[i].x - currentPoint.x,
+          y: points[i].y - currentPoint.y,
+        };
+        const cross = r.x * q.y - r.y * q.x;
+        if (
+          cross > 0 ||
+          (cross === 0 &&
+            distance(points[i], currentPoint) >
+            distance(points[nextIndex], currentPoint))
+        ) {
+          // linestodraw.push(points[onhull]);
+          nextIndex = i;
+          minangle = nextIndex;
+
+          drawLineWithDelay(points[currentIndex], points[nextIndex], 0);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          if (!isInHull(points[i], partial_hull)) {
+            // linestodraw.push(points[i]);
+            drawLineWithDelay(points[currentIndex], points[i], 0);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
+        clearCanvas();
+        ctx.strokeStyle = "black";
+        drawPoints();
+      }
+        // await new Promise(resolve => setTimeout(resolve, delay));
+
+        // clearCanvas();
+        // ctx.strokeStyle = "black";
+        // drawPoints();
+
+        // ctx.beginPath();
+        // // const originalStrokeStyle = ctx.strokeStyle;
+        // ctx.strokeStyle = "blue";
+        // ctx.moveTo(hull[0].x, hull[0].y);
+        // for (let i = 1; i < hull.length; i++) {
+        //   ctx.lineTo(hull[i].x, hull[i].y);
+        // }
+        // // ctx.closePath();
+        // ctx.stroke();
+        // ctx.strokeStyle = originalStrokeStyle;
+      // }
+
+      clearCanvas();
+      ctx.strokeStyle = "black";
+      drawPoints();
+
+      // ind_to_return = currentIndex;
+      // pt_to_return = currentPoint;
+
+      currentPoint = points[nextIndex];
+
+      partial_hull.push(currentPoint);
+
+      currentIndex = nextIndex;
+
+      console.log(partial_hull);
+
+      return [currentPoint,currentIndex,partial_hull];
     }
 
     function animateLine(x1, y1, x2, y2) {
@@ -914,9 +1124,9 @@
         return findMedianOfMedians(medians);
       }
 
-      const medianOfMedians = findMedianOfMedians(arr);
-      return medianOfMedians;
-    }
+        const medianOfMedians = findMedianOfMedians(arr);
+        return medianOfMedians;
+      }
 
     function flipped(points) {
       var new_pts = [];
@@ -1076,7 +1286,63 @@
       // drawPoints();
     }
 
-    let index, hull;
+    let index, hull, cur, cur_index;
+    let cur_hull = [];
+
+    async function hull_do_step1() {
+      if (index === undefined) {
+        index = 0;
+      }
+
+      if (index === 0) {
+        if (flag === 0){
+          x = await hullonly_jarvisMarch(points);
+          console.log(x);
+          hull = x[0];
+          cur = x[1];
+          cur_index = x[2]; 
+          console.log(hull);
+          console.log(cur);
+          console.log(cur_index);
+          cur_hull.push(cur);
+          index++;
+        }
+      } 
+      
+      else if (index <= hull.length) {
+        // drawLineWithDelay(hull[index - 1], hull[index], 100);
+        y= await jarvisMarch_step(cur,cur_index,points,index,cur_hull);
+        cur = y[0];
+        cur_index = y[1];
+        cur_hull = y[2];
+
+        ctx.beginPath();
+        ctx.strokeStyle = "blue";
+        console.log(cur_hull);
+        ctx.moveTo(cur_hull[0].x, cur_hull[0].y);
+        for (let i = 1; i < cur_hull.length; i++) {
+          ctx.lineTo(cur_hull[i].x, cur_hull[i].y);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = 'black';
+
+        index++;
+      } 
+      
+      // else if (index === hull.length) {
+      //   // drawLineWithDelay(hull[hull.length - 1], hull[0], 100);
+      //   index++;
+      // } 
+      
+      else {
+        // Finished drawing the hull
+        clearCanvas();
+        drawPoints();
+        index = undefined; // Reset for next call
+      }
+
+    }
+
     function hull_do_step() {
       if (index === undefined) {
         // Initialization on first call
