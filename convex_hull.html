@@ -1206,6 +1206,10 @@
      * Skips animations and displays the convex hull.
      */
     async function skip_animations() {
+      if (points.length < 2) {
+        alert("Please generate at least 2 points to find the convex hull.");
+        return;
+      }
       let hull;
       if (flag === 0) {
         drawPoints();
@@ -1296,6 +1300,10 @@
      * Displays the convex hull with animations.
      */
     async function hull_do() {
+      if (points.length < 2) {
+        alert("Please generate at least 2 points to find the convex hull.");
+        return;
+      }
       kps_hull_steps = [];
       console.log(flag);
       let hull;
