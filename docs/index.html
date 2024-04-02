@@ -20,7 +20,34 @@
   <body>
     <div id="main">
       <h1 class="page-title">Home</h1>
-
+      <h2>Comparison of Algorithms</h2>
+          <table>
+            <tr>
+              <th> </th>
+              <th>Jarvis March</th>
+              <th>Kirkpatrick-Seidel</th>
+            </tr>
+            <tr>
+              <td>Algorithmic Approach</td>
+              <td width = "400">Straightforward, iterative method: selects the next point on the convex hull by considering all points and choosing the one with the smallest angle.</td>
+              <td width = "400">More sophisticated algorithm which uses divide-and-conquer: recursively partitions the points and merges the convex hull of these subsets.</td>
+            </tr>
+            <tr>
+              <td>Time Complexity</td>
+              <td> O(nh), where n is the number of input points and h is the number of points on the convex hull. Runs in O(n^2) time in the worst case.</td>
+              <td>O(n log h), where n is the number of input points and h is the number of points on the convex hull. Better than Jarvis March, especially for large datasets.</td>
+            </tr>
+            <tr>
+              <td>Applicability</td>
+              <td>Suitable for small to medium sized datasets, used when simplicity is preferred over efficiency.</td>
+              <td>Suitable for large datasets with larger number of points, offers better performance due to superior time complexity.</td>
+            </tr>
+            <tr>
+              <td>Robustness</td>
+              <td>Can handle degenerate cases (such as collinear points) but may suffer from inefficiency in such scenarios.</td>
+              <td>More robust in handling degenerate cases due to its sophisticated merging technique.</td>
+            </tr>
+          </table>
       <h3></h3>
     </div>
 
