@@ -467,105 +467,59 @@
      * @param {Array} points - The array of points.
      * @returns {Promise<Array>} A Promise that resolves to an array containing the convex hull, the leftmost point, and the index of the leftmost point.
      */
-    async function hullonly_jarvisMarch(points) {
-      // let delay = 400; // Delay in milliseconds
-      let leftMostPoint = points[0];
-      let leftMostIndex = 0;
-      for (let i = 1; i < points.length; i++) {
-        if (points[i].x < leftMostPoint.x) {
-          leftMostPoint = points[i];
-          leftMostIndex = i;
-        }
-      }
-
-      const hull = [];
-      let currentPoint = leftMostPoint;
-      let currentIndex = leftMostIndex;
-
-      const originalStrokeStyle = ctx.strokeStyle;
-
-      do {
-        hull.push(currentPoint);
-        // ctx.beginPath();
-        // ctx.strokeStyle = "blue";
-        // ctx.moveTo(hull[0].x, hull[0].y);
-        // for (let i = 1; i < hull.length; i++) {
-        //   ctx.lineTo(hull[i].x, hull[i].y);
-        // }
-        // ctx.stroke();
-        // ctx.strokeStyle = originalStrokeStyle;
-
-        let nextIndex = (currentIndex + 1) % points.length;
-
-        minangle = nextIndex;
-
-        for (let i = 0; i < points.length; i++) {
-          if (i === currentIndex) continue; // Skip the current point
-
-          // ctx.strokeStyle = "green";
-          // ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
-          // ctx.lineTo(points[minangle].x, points[minangle].y);
-          // ctx.stroke();
-          // ctx.strokeStyle = originalStrokeStyle;
-
-          // Use cross product to determine the orientation of the three points
-          const r = {
-            x: points[nextIndex].x - currentPoint.x,
-            y: points[nextIndex].y - currentPoint.y,
-          };
-          const q = {
-            x: points[i].x - currentPoint.x,
-            y: points[i].y - currentPoint.y,
-          };
-          const cross = r.x * q.y - r.y * q.x;
-          if (
-            cross > 0 ||
-            (cross === 0 &&
-              distance(points[i], currentPoint) >
-              distance(points[nextIndex], currentPoint))
-          ) {
-            // linestodraw.push(points[onhull]);
-            nextIndex = i;
-            minangle = nextIndex;
-
-            // drawLineWithDelay(points[currentIndex], points[nextIndex], 0);
-            // await new Promise((resolve) => setTimeout(resolve, delay));
-          } else {
-            if (!isInHull(points[i], hull)) {
-              // linestodraw.push(points[i]);
-              // drawLineWithDelay(points[currentIndex], points[i], 0);
-              // await new Promise((resolve) => setTimeout(resolve, delay));
+     async function hullonly_jarvisMarch(points) {
+            let leftMostPoint = points[0];
+            let leftMostIndex = 0;
+            for (let i = 1; i < points.length; i++) {
+                if (points[i].x < leftMostPoint.x) {
+                leftMostPoint = points[i];
+                leftMostIndex = i;
+                }
             }
-          }
 
-          // await new Promise(resolve => setTimeout(resolve, delay));
+            const hull = [];
+            let currentPoint = leftMostPoint;
+            let currentIndex = leftMostIndex;
 
-          // clearCanvas();
-          // ctx.strokeStyle = "black";
-          // drawPoints();
+            const originalStrokeStyle = ctx.strokeStyle;
 
-          // ctx.beginPath();
-          // // const originalStrokeStyle = ctx.strokeStyle;
-          // ctx.strokeStyle = "blue";
-          // ctx.moveTo(hull[0].x, hull[0].y);
-          // for (let i = 1; i < hull.length; i++) {
-          //   ctx.lineTo(hull[i].x, hull[i].y);
-          // }
-          // // ctx.closePath();
-          // ctx.stroke();
-          // ctx.strokeStyle = originalStrokeStyle;
-        }
+            do {
+                hull.push(currentPoint);
 
-        // clearCanvas();
-        // ctx.strokeStyle = "black";
-        // drawPoints();
-        currentPoint = points[nextIndex];
+                let nextIndex = (currentIndex + 1) % points.length;
 
-        currentIndex = nextIndex;
-      } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+                minangle = nextIndex;
 
-      return [hull, leftMostPoint, leftMostIndex];
-    }
+                for (let i = 0; i < points.length; i++) {
+                if (i === currentIndex) continue;
+
+                const r = {
+                    x: points[nextIndex].x - currentPoint.x,
+                    y: points[nextIndex].y - currentPoint.y,
+                };
+                const q = {
+                    x: points[i].x - currentPoint.x,
+                    y: points[i].y - currentPoint.y,
+                };
+                const cross = r.x * q.y - r.y * q.x;
+                if (
+                    cross > 0 ||
+                    (cross === 0 &&
+                    distance(points[i], currentPoint) >
+                    distance(points[nextIndex], currentPoint))
+                ) {
+                    nextIndex = i;
+                    minangle = nextIndex;
+                }
+                }
+                currentPoint = points[nextIndex];
+
+                currentIndex = nextIndex;
+                // console.log(currentIndex);
+            } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
+
+            return [hull, leftMostPoint, leftMostIndex];
+            }
 
     /**
      * Recursive helper function for the Jarvis March algorithm with step-by-step visualization.
@@ -698,14 +652,15 @@
      */
     function generate_random_points(n) {
       points = [];
-      for (var i = 0; i < n; i++) {
-        var x = Math.floor(Math.random() * 1000);
-        var y = Math.floor(Math.random() * 500);
-        points.push({ x, y });
+      for (let i = 0; i < n; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                points.push({ x, y });
       }
       clearCanvas();
       drawPoints();
-      displayCoordinates();
+      if(n<1000)
+        displayCoordinates();
     }
 
     /**
@@ -748,6 +703,7 @@
      * @returns {number} The Euclidean distance between the two points.
      */
     function distance(p1, p2) {
+      console.log(Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)));
       return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
     }
 
@@ -1262,7 +1218,7 @@
         let hull_X = await hullonly_jarvisMarch(points);
         console.timeEnd("JM");
         hull = hull_X[0];
-        // console.log(hull);
+        // console.log(hull.length,hull);
         clearCanvas();
         drawPoints();
         ctx.strokeStyle = "#15f4ee";
@@ -1306,6 +1262,7 @@
         console.time("KPS");
         hull = KPS(points);
         console.timeEnd("KPS");
+        // console.log(hull.length,hull);
         clearCanvas();
         drawPoints();
         ctx.strokeStyle = "white";

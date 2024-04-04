@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Jarvis March Algorithm Visualization</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="1400" height="600"></canvas>
+    <label for="numPointsInput"></label>
+    <input type="number" id="numPointsInput" value="10">
+    <button onclick="generateRandomPoints()">Generate Random Points</button>
+    <!-- <button onclick="clearLines()">Clear Lines</button> -->
+    <button onclick="hull_do()">Compute Convex Hull</button>
+    <script>
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.translate(0, canvas.height);
+        ctx.scale(1, -1);
+        ctx.translate(0, 0);
+
+        const points = [];
+
+        function generateRandomPoints() {
+            const numPointsInput = document.getElementById("numPointsInput");
+            const numPoints = parseInt(numPointsInput.value);
+            points.length = 0; // Clear existing points
+            for (let i = 0; i < numPoints; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                points.push({ x, y });
+            }
+            console.log(`Generated ${numPoints} random points:`); // Optional: Log the generated points
+        }
+
+      /**
+          * Implement the Kirk-Patrick-Seidel algorithm to find the convex hull.
+          * @param {Array} points - The array of points.
+          * @returns {Array} The array of points in the convex hull.
+          */
+          function KPS(points) {
+            // console.log(points);
+            if (points.length < 4) {
+              return points;
+            }
+
+            var upper_hull = callUpperHull(Array.from(points));
+            var new_pts = flipped(Array.from(points));
+            var lower_hull = flipped(callUpperHull(Array.from(new_pts)));
+
+            // console.log(upper_hull);
+            // console.log(lower_hull);
+
+            if (
+              upper_hull[upper_hull.length - 1].x === lower_hull[0].x &&
+              upper_hull[upper_hull.length - 1].y === lower_hull[0].y
+            ) {
+              upper_hull.pop();
+            }
+            if (
+              upper_hull[0].x === lower_hull[lower_hull.length - 1].x &&
+              upper_hull[0].y === lower_hull[lower_hull.length - 1].y
+            ) {
+              lower_hull.pop();
+            }
+
+            if (upper_hull[0].x === lower_hull[lower_hull.length - 1].x) {
+              kps_hull_steps.push([
+                upper_hull[0],
+                lower_hull[lower_hull.length - 1],
+              ]);
+            }
+            if (lower_hull[0].x === upper_hull[upper_hull.length - 1].x) {
+              kps_hull_steps.push([
+                lower_hull[0],
+                upper_hull[upper_hull.length - 1],
+              ]);
+            }
+            return [...upper_hull, ...lower_hull];
+          }
+
+          /**
+           * Find the upper hull of a set of points using the Kirk-Patrick-Seidel algorithm.
+           * @param {Array} points - The array of points.
+           * @returns {Array} The upper hull of the points.
+           */
+          function callUpperHull(points) {
+            // console.log(points);
+            //find pumin, plmin, pumax, plmax
+            var pumin = points[0];
+            var plmin = points[0];
+            var pumax = points[0];
+            var plmax = points[0];
+
+            for (var i = 1; i < points.length; i++) {
+              if (points[i].x < pumin.x) {
+                pumin = points[i];
+                plmin = points[i];
+              } else if (points[i].y > pumin.y && points[i].x === pumin.x) {
+                pumin = points[i];
+              } else if (points[i].y < plmin.y && points[i].x === pumin.x) {
+                plmin = points[i];
+              }
+
+              if (points[i].x > pumax.x) {
+                pumax = points[i];
+                plmax = points[i];
+              } else if (points[i].y > pumax.y && points[i].x === pumax.x) {
+                pumax = points[i];
+              } else if (points[i].y < plmax.y && points[i].x === pumax.x) {
+                plmax = points[i];
+              }
+            }
+
+            var T_upper = [];
+            // console.log(pumin);
+            // console.log(pumax);
+            T_upper.push(pumin);
+            T_upper.push(pumax);
+            // console.log(T_upper);
+            var temp = [];
+            for (var i = 0; i < points.length; i++) {
+              if (points[i].x < pumax.x && points[i].x > pumin.x) {
+                T_upper.push(points[i]);
+              }
+            }
+            // console.log(Array.from(T_upper));
+            return UpperHull(pumin, pumax, Array.from(T_upper));
+          }
+
+          /**
+           * Recursive helper function for finding the upper hull.
+           * @param {Object} pmin - The leftmost point.
+           * @param {Object} pmax - The rightmost point.
+           * @param {Array} T - The subset of points between pmin and pmax.
+           * @returns {Array} The upper hull of the points in T.
+           */
+          function UpperHull(pmin, pmax, T) {
+            // console.log(T);
+            // if (T.length <= 2) {
+            //   if (T.length == 2) {
+            //     if (T[0].x < T[1].x) {
+            //       kps_hull_steps.push(T);
+            //     } else {
+            //       kps_hull_steps.push(T.reverse());
+            //     }
+            //   }
+            //   return T;
+            // }
+            var a = findMedian(Array.from(T));
+            // console.log(a);
+            pl_pr_array = UpperBridge(Array.from(T), a);
+            // console.log(pl_pr_array);
+            // kps_hull_steps.push(pl_pr_array);
+            // console.log(kps_hull_steps);
+            var pl = pl_pr_array[0];
+            var pr = pl_pr_array[1];
+
+            //finding points of T_left to the left of line through pl and pmin
+            var T_left2 = [];
+            T_left2.push(pl);
+            for (var i = 0; i < T.length; i++) {
+              if (T[i].x < pl.x) {
+                T_left2.push(T[i]);
+              }
+            }
+            //finding points of T_right to the right of line through pr and pmax
+            var T_right2 = [];
+            T_right2.push(pr);
+            // console.log(pr);
+            for (var i = 0; i < T.length; i++) {
+              if (T[i].x > pr.x) {
+                T_right2.push(T[i]);
+              }
+            }
+            let ans = [];
+
+            // console.log(T_left2);
+            // console.log(T_right2);
+
+            var upper_hull_left = [];
+            var upper_hull_right = [];
+            if (pl === pmin) {
+              // console.log("OOOOO");
+              upper_hull_left.push(pl);
+            } else {
+              // console.log("hi");
+              upper_hull_left = UpperHull(pmin, pl, Array.from(T_left2));
+              // console.log("hello");
+            }
+            // console.log(T_right2);
+            if (pr === pmax) {
+              // console.log("*******");
+              upper_hull_right.push(pr);
+            } else {
+              // console.log("GG");
+              // console.log(pr);
+              upper_hull_right = UpperHull(pr, pmax, Array.from(T_right2));
+              // console.log("HH");
+            }
+            // console.log(upper_hull_left);
+            // console.log("length is ", upper_hull_left.length);
+            // console.log(upper_hull_right);
+            // console.log("LENGTH R is ", upper_hull_right.length);
+
+            ans = [...upper_hull_left, ...upper_hull_right];
+            // console.log(ans);
+            // console.log("ANS len is ", ans.length);
+
+            return ans;
+          }
+
+          /**
+           * Find the median x-coordinate of an array of points.
+           * @param {Array} arr - The array of points.
+           * @returns {number} The median x-coordinate.
+           */
+          function findMedian(arr) {
+            arr.sort((a, b) => a.x - b.x);
+            const middleIndex = Math.floor(arr.length / 2);
+            // console.log(arr);
+            if (arr.length % 2 === 0) {
+              return (arr[middleIndex - 1].x + arr[middleIndex].x) / 2;
+            } else {
+              return arr[middleIndex].x;
+            }
+          }
+
+          /**
+           * Find the bridge points for the upper hull.
+           * @param {Array} S - The set of points.
+           * @param {number} L - The median x-coordinate.
+           * @returns {Array} The left and right bridge points.
+           */
+          function UpperBridge(S, L) {
+            var candidates = [];
+            // console.log(candidates);
+            var ans = [];
+            // console.log(S);
+            // console.log(S.length);
+            if (S.length < 2) {
+              return S;
+            }
+            if (S.length === 2) {
+              if (S[0].x <= S[1].x) {
+                ans.push(S[0]);
+                ans.push(S[1]);
+              } else {
+                ans.push(S[1]);
+                ans.push(S[0]);
+              }
+              return ans;
+            }
+            var check = 0;
+            if (S.length % 2) {
+              check = 1;
+              candidates.push(S[0]);
+            }
+
+            var pairs = [];
+            for (var i = check; i < S.length; i += 2) {
+              if (S[i].x <= S[i + 1].x) {
+                pairs.push([S[i], S[i + 1]]);
+              } else {
+                pairs.push([S[i + 1], S[i]]);
+              }
+            }
+            // console.log(pairs);
+            var slopes = [];
+
+            for (var i = 0; i < pairs.length; i++) {
+              var pair = pairs[i];
+              if (pair[0].x === pair[1].x) {
+                if (pair[0].y > pair[1].y) {
+                  candidates.push(pair[0]);
+                } else {
+                  candidates.push(pair[1]);
+                }
+                pairs.splice(i, 1);
+                i--;
+              }
+            }
+            pairs.forEach((pair) => {
+              if (pair[0].x === pair[1].x) {
+                if (pair[0].y > pair[1].y) {
+                  candidates.push(pair[0]);
+                } else {
+                  candidates.push(pair[1]);
+                }
+              } else {
+                var k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+                slopes.push(k);
+              }
+            });
+            var median_k = findMedianSlope(slopes);
+            // console.log("median slopes of pairs is " + median_k);
+            var small = [];
+            var large = [];
+            var equal = [];
+
+            pairs.forEach((pair) => {
+              var k = (pair[0].y - pair[1].y) / (pair[0].x - pair[1].x);
+              if (k < median_k) small.push(pair);
+              else if (k === median_k) equal.push(pair);
+              else large.push(pair);
+            });
+
+            var pk = S[0];
+            var pm = S[0];
+            var max = S[0].y - median_k * S[0].x;
+            for (var i = 1; i < S.length; i++) {
+              if (max < S[i].y - median_k * S[i].x) {
+                max = S[i].y - median_k * S[i].x;
+                pk = S[i];
+                // console.log(pk);
+                pm = S[i];
+              }
+            }
+
+            // console.log(pk);
+            // console.log(pm);
+
+            // console.log(max);
+
+            var tolerance = 0.000001;
+
+            for (var i = 0; i < S.length; i++) {
+              var difference = Math.abs(max - (S[i].y - median_k * S[i].x));
+              if (difference < tolerance) {
+                // console.log("KKKKK");
+                if (S[i].x < pk.x) pk = S[i];
+                if (S[i].x > pm.x) pm = S[i];
+              }
+            }
+
+            // console.log(pk);
+            // console.log(pm);
+            // console.log(L);
+
+            if (pk.x <= L && pm.x > L) {
+              ans.push(pk);
+              ans.push(pm);
+              return ans;
+            }
+
+            // console.log(small);
+            // console.log(equal);
+            // console.log(large);
+            // console.log(candidates);
+            if (pm.x <= L) {
+              for (const ele of small) {
+                const first = ele[0];
+                const second = ele[1];
+                // console.log(first);
+                // console.log(second);
+                candidates.push(first);
+                // console.log(candidates);
+                candidates.push(second);
+              }
+              for (const ele of large) {
+                candidates.push(ele[1]);
+              }
+              for (const ele of equal) {
+                // console.log(ele[0]);
+                candidates.push(ele[1]);
+              }
+            }
+
+            if (pk.x > L) {
+              for (const ele of small) {
+                candidates.push(ele[0]);
+              }
+              for (const ele of large) {
+                candidates.push(ele[0], ele[1]);
+              }
+              for (const ele of equal) {
+                candidates.push(ele[0]);
+              }
+            }
+            // console.log(candidates);
+            // const cloned = [...candidates];
+            // candidates = [];
+            return UpperBridge(Array.from(candidates), L);
+          }
+
+          /**
+           * Find the median slope of an array of slopes.
+           * @param {Array} arr - The array of slopes.
+           * @returns {number} The median slope.
+           */
+          function findMedianSlope(arr) {
+              if (arr.length === 0) return null;
+
+              function findMedian(arr, left, right) {
+                const middleIndex = Math.floor((left + right) / 2);
+                let pivotIndex = partition(arr, left, right, middleIndex);
+                const targetIndex = Math.floor((left + right) / 2);
+
+                while (pivotIndex !== targetIndex) {
+                  if (pivotIndex < targetIndex) {
+                    left = pivotIndex + 1;
+                    pivotIndex = partition(arr, left, right, pivotIndex + 1);
+                  } else {
+                    right = pivotIndex - 1;
+                    pivotIndex = partition(arr, left, right, left);
+                  }
+                }
+
+                return arr[pivotIndex];
+              }
+
+              function partition(arr, left, right, pivotIndex) {
+                const pivotValue = arr[pivotIndex];
+                let storeIndex = left;
+
+                [arr[pivotIndex], arr[right]] = [arr[right], arr[pivotIndex]];
+
+                for (let i = left; i < right; i++) {
+                  if (arr[i] < pivotValue) {
+                    [arr[i], arr[storeIndex]] = [arr[storeIndex], arr[i]];
+                    storeIndex++;
+                  }
+                }
+
+                [arr[right], arr[storeIndex]] = [arr[storeIndex], arr[right]];
+
+                return storeIndex;
+              }
+
+              return findMedian(arr, 0, arr.length - 1);
+            }
+
+
+          /**
+           * Flip the points about the origin.
+           * @param {Array} points - The array of points.
+           * @returns {Array} The flipped array of points.
+           */
+          function flipped(points) {
+            var new_pts = [];
+            for (var i = 0; i < points.length; i++) {
+              var x = points[i].x * -1;
+              var y = points[i].y * -1;
+              new_pts.push({ x, y });
+            }
+            return new_pts;
+          }
+
+          function hull_do() {
+            console.log(points.length)
+            console.time("KPS");
+            hull = KPS(points);
+            console.timeEnd("KPS");
+            console.log(hull.length);
+        }
+
+    </script>
+</body>
+
+</html>

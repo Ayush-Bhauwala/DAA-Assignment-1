@@ -3,36 +3,15 @@
 
 <head>
     <title>Jarvis March Algorithm Visualization</title>
-    <style>
-        body {
-            background-color: #111;
-            color: #fff;
-        }
-
-        canvas {
-            border: 1px solid #fff;
-        }
-
-        button {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            margin: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #555;
-        }
-    </style>
 </head>
 
 <body>
     <canvas id="myCanvas" width="1400" height="600"></canvas>
+    <label for="numPointsInput"></label>
+    <input type="number" id="numPointsInput" value="10">
+    <button onclick="generateRandomPoints()">Generate Random Points</button>
+    <!-- <button onclick="clearLines()">Clear Lines</button> -->
     <button onclick="hull_do()">Compute Convex Hull</button>
-    <button onclick="clearLines()">Clear Lines</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.1.1/d3.min.js"></script>
     <script>
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
@@ -40,63 +19,27 @@
         ctx.scale(1, -1);
         ctx.translate(0, 0);
 
-        // Function to clear the canvas
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Function to clear only lines from the canvas
-        function clearLines() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            points.forEach((point) => {
-                drawPoint(point.x, point.y, false); // Do not make points glow
-            });
-        }
-
-        // Function to draw a point with optional glow effect
-        function drawPoint(x, y, shouldGlow) {
-            if (shouldGlow) {
-                // Create radial gradient for glow effect
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 1000);
-                // gradient.addColorStop(0, "rgba(255, 255, 0, 0.5)"); // Yellow glow color
-                gradient.addColorStop(0, "rgba(255, 0, 0, 0.5)"); // Red glow color
-
-                gradient.addColorStop(1, "transparent");
-
-                // Draw circle with glow effect
-                ctx.beginPath();
-                ctx.arc(x, y, 8, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            } else {
-                // Draw regular point without glow effect
-                ctx.beginPath();
-                ctx.arc(x, y, 8, 0, Math.PI * 2);
-                ctx.fillStyle = "black";
-                ctx.fill();
-                ctx.strokeStyle = "#fff";
-                ctx.stroke();
-            }
-        }
-
         const points = [];
-        canvas.addEventListener("click", function(event) {
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX;
-            const y = canvas.height - event.clientY;
-            points.push({ x, y });
-            drawPoint(x, y, false); // Do not make newly added point glow
-        });
 
-        async function jarvisMarch(points) {
-            let delay = 100;
+        function generateRandomPoints() {
+            const numPointsInput = document.getElementById("numPointsInput");
+            const numPoints = parseInt(numPointsInput.value);
+            points.length = 0; // Clear existing points
+            for (let i = 0; i < numPoints; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                points.push({ x, y });
+            }
+            console.log(`Generated ${numPoints} random points:`); // Optional: Log the generated points
+        }
+
+        async function hullonly_jarvisMarch(points) {
             let leftMostPoint = points[0];
             let leftMostIndex = 0;
-
             for (let i = 1; i < points.length; i++) {
                 if (points[i].x < leftMostPoint.x) {
-                    leftMostPoint = points[i];
-                    leftMostIndex = i;
+                leftMostPoint = points[i];
+                leftMostIndex = i;
                 }
             }
 
@@ -104,88 +47,56 @@
             let currentPoint = leftMostPoint;
             let currentIndex = leftMostIndex;
 
+            const originalStrokeStyle = ctx.strokeStyle;
+
             do {
                 hull.push(currentPoint);
+
                 let nextIndex = (currentIndex + 1) % points.length;
+
+                minangle = nextIndex;
+
                 for (let i = 0; i < points.length; i++) {
-                    if (i === currentIndex) continue;
-                    const r = {
-                        x: points[nextIndex].x - currentPoint.x,
-                        y: points[nextIndex].y - currentPoint.y,
-                    };
-                    const q = {
-                        x: points[i].x - currentPoint.x,
-                        y: points[i].y - currentPoint.y,
-                    };
-                    const cross = r.x * q.y - r.y * q.x;
+                if (i === currentIndex) continue;
 
-                    if (
-                        cross > 0 ||
-                        (cross === 0 &&
-                            distance(points[i], currentPoint) >
-                            distance(points[nextIndex], currentPoint))
-                    ) {
-                        nextIndex = i;
-                    }
+                const r = {
+                    x: points[nextIndex].x - currentPoint.x,
+                    y: points[nextIndex].y - currentPoint.y,
+                };
+                const q = {
+                    x: points[i].x - currentPoint.x,
+                    y: points[i].y - currentPoint.y,
+                };
+                const cross = r.x * q.y - r.y * q.x;
+                if (
+                    cross > 0 ||
+                    (cross === 0 &&
+                    distance(points[i], currentPoint) >
+                    distance(points[nextIndex], currentPoint))
+                ) {
+                    nextIndex = i;
+                    minangle = nextIndex;
                 }
-
+                }
                 currentPoint = points[nextIndex];
-                await drawLineWithDelay(hull[hull.length - 1], currentPoint, delay);
 
                 currentIndex = nextIndex;
-            } while (currentIndex !== leftMostIndex);
+                console.log(currentIndex);
+            } while (currentIndex !== leftMostIndex); // Stop when we return to the starting point
 
-            return hull;
-        }
+            return [hull, leftMostPoint, leftMostIndex];
+            }
 
-        async function drawLineWithDelay(start, end, delay) {
-            return new Promise(resolve => {
-                const frames = 1; // Adjust the number of frames as needed
-                const dx = (end.x - start.x) / frames;
-                const dy = (end.y - start.y) / frames;
-
-                let frameCount = 0;
-
-                const animateFrame = () => {
-                    if (frameCount < frames) {
-                        const x = start.x + dx * frameCount;
-                        const y = start.y + dy * frameCount;
-
-                        ctx.beginPath();
-                        ctx.moveTo(start.x, start.y);
-                        ctx.lineTo(x, y);
-                        ctx.stroke();
-
-                        frameCount++;
-                        setTimeout(animateFrame, delay);
-                    } else {
-                        ctx.beginPath();
-                        ctx.moveTo(start.x, start.y);
-                        ctx.lineTo(end.x, end.y);
-                        ctx.stroke();
-                        resolve(); // Resolve the promise when animation is complete
-                    }
-                };
-
-                animateFrame();
-            });
-        }
-
-        function hull_do() {
-            clearLines();
-            jarvisMarch(points).then(hull => {
-                points.forEach((point) => {
-                    // Check if the point is on the convex hull
-                    if (hull.some(hullPoint => hullPoint.x === point.x && hullPoint.y === point.y)) {
-                        drawPoint(point.x, point.y, true); // Make points on the convex hull glow
-                    } else {
-                        drawPoint(point.x, point.y, false); // Do not make other points glow
-                    }
-                });
-            });
+        async function hull_do() {
+            console.log(points.length)
+            console.time("JM");
+            let hull_X = await hullonly_jarvisMarch(points);
+            console.timeEnd("JM");
+            console.log(hull_X[0].length);
         }
 
         function distance(p1, p2) {
+            console.log(1);
             return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
         }
     </script>
