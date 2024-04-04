@@ -740,6 +740,12 @@
       function KPS(points) {
         // console.log(points);
         if (points.length < 4) {
+          console.log(1);
+          for (let j = 0; j < points.length - 1; j++) {
+            console.log(2);
+            kps_hull_steps.push([points[j], points[j + 1]]);
+          }
+          kps_hull_steps.push([points[points.length - 1], points[0]]);
           return points;
         }
 
